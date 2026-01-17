@@ -46,7 +46,8 @@
 
     <script>
         async function loadAll() {
-            const res = await fetch('http://localhost:3000/admin/todo');
+            // URL actualizada a Render para obtener todos los comentarios
+            const res = await fetch('https://mente-sana-frontend.onrender.com/admin/todo');
             const data = await res.json();
             let html = '<table><tr><th>ID</th><th>Lectura</th><th>Autor</th><th>Comentario</th><th>Acción</th></tr>';
             data.forEach(c => {
@@ -64,11 +65,12 @@
         async function deleteComm(id) {
             const password = prompt("Ingrese la clave de administrador para confirmar:");
 
-            if (!password) return; 
+            if (!password) return;
 
             if (confirm('¿Seguro que quieres borrar este comentario?')) {
                 try {
-                    const response = await fetch(`http://localhost:3000/comentarios/${id}`, {
+                    // URL actualizada a Render para la eliminación por ID
+                    const response = await fetch(`https://mente-sana-frontend.onrender.com/comentarios/${id}`, {
                         method: 'DELETE',
                         headers: {
                             'x-admin-key': password
