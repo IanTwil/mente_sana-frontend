@@ -263,118 +263,94 @@
             transform: scale(1.02);
         }
 
-        /* --- SECCIÓN DE COMENTARIOS MEJORADA --- */
+        /* --- MURO DE LA COMUNIDAD (DISEÑO PROFESIONAL) --- */
         .comments-section {
             background: #ffffff;
             padding: 2.5rem;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            animation: fadeInUp 1s ease forwards 0.8s;
-            opacity: 0;
+        }
+
+        .comment-thread {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #f0f2f5;
+            padding-bottom: 1.5rem;
         }
 
         .comment-item {
             background: #ffffff;
-            padding: 20px;
+            padding: 18px;
             border-radius: 15px;
-            margin-top: 20px;
-            border: 1px solid #f0f0f0;
-            transition: all 0.3s ease;
+            border: 1px solid #edf2f7;
+            position: relative;
+            transition: transform 0.2s ease;
         }
 
         .comentario-oficial {
             border-left: 5px solid #1abc9c !important;
             background-color: #f0fff4 !important;
+            box-shadow: 0 4px 12px rgba(26, 188, 156, 0.1);
         }
 
         .comment-item strong {
             color: #2c3e50;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .comment-item strong::before {
-            content: "👤";
-            font-size: 0.8rem;
-            background: #f0f2f5;
-            padding: 6px;
-            border-radius: 50%;
-        }
-
-        .comentario-oficial strong::before {
-            content: "🛡️";
-            background: #c6f6d5;
+        .comment-item p {
+            margin: 10px 0 10px 35px;
+            color: #4a5568;
+            line-height: 1.5;
         }
 
         .comment-item small {
             color: #a0aec0;
-            display: block;
-            margin: 4px 0 10px 42px;
+            margin-left: 35px;
+            font-size: 0.8rem;
         }
 
-        .comment-item p {
-            margin-left: 42px;
-            color: #4a5568;
-            line-height: 1.6;
-        }
-
-        /* --- DISEÑO DE RESPUESTAS --- */
         .replies-container {
-            margin-left: 42px;
-            border-left: 2px solid #edf2f7;
+            margin-left: 50px;
+            margin-top: 12px;
+            border-left: 2px solid #cbd5e0;
             padding-left: 20px;
-            margin-top: 10px;
-        }
-
-        .btn-action {
-            margin-left: 42px;
-            margin-top: 10px;
-            background: none;
-            border: none;
-            color: #1abc9c;
-            font-weight: bold;
-            font-size: 0.85rem;
-            cursor: pointer;
-        }
-
-        .btn-delete {
-            color: #e74c3c;
-            margin-left: 15px;
         }
 
         .reply-item {
-            background: #ffffff;
-            border: 1px solid #eee;
-            padding: 10px 15px;
-            border-radius: 10px;
-            margin-top: 10px;
+            background: #f8fafc;
+            padding: 12px 18px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            border: 1px solid #e2e8f0;
             font-size: 0.95rem;
         }
 
-        .reply-item strong {
-            color: #2c3e50;
-            display: inline-block;
-            margin-right: 5px;
+        .btn-action-group {
+            margin-left: 35px;
+            margin-top: 10px;
+            display: flex;
+            gap: 15px;
         }
 
-        .btn-reply {
-            margin-left: 42px;
-            margin-top: 15px;
-            background: #fff5f5;
-            color: #e53e3e !important;
-            border: 1px solid #feb2b2;
-            padding: 5px 12px;
-            border-radius: 8px;
+        .btn-reply-action {
+            background: none;
+            border: none;
+            color: #1abc9c;
             font-size: 0.85rem;
+            font-weight: bold;
             cursor: pointer;
-            transition: 0.2s;
+            text-decoration: none;
         }
 
-        .btn-reply:hover {
-            background: #feb2b2;
-            color: white !important;
+        .btn-reply-action:hover {
+            text-decoration: underline;
+        }
+
+        .btn-delete-action {
+            color: #e74c3c !important;
         }
 
         .reply-form {
@@ -613,7 +589,6 @@
             try {
                 const response = await fetch(`${API_URL}/comentarios/contacto`);
                 const allComments = await response.json();
-
                 commentsContainer.innerHTML = '';
 
                 if (allComments.length === 0) {
@@ -621,51 +596,63 @@
                     return;
                 }
 
-                allComments.forEach(comment => {
-                    renderThread(comment);
+                const principales = allComments.filter(c => !c.contenido.trim().startsWith('@'));
+                const respuestas = allComments.filter(c => c.contenido.trim().startsWith('@'));
+
+                principales.forEach(parent => {
+                    const threadWrapper = document.createElement('div');
+                    threadWrapper.className = 'comment-thread';
+
+                    threadWrapper.innerHTML = generateCommentHTML(parent, false);
+
+                    const susRespuestas = respuestas.filter(r => r.contenido.includes(`@${parent.nombre}`));
+
+                    if (susRespuestas.length > 0) {
+                        const repliesDiv = document.createElement('div');
+                        repliesDiv.className = 'replies-container';
+                        susRespuestas.forEach(reply => {
+                            repliesDiv.innerHTML += generateCommentHTML(reply, true);
+                        });
+                        threadWrapper.appendChild(repliesDiv);
+                    }
+
+                    commentsContainer.appendChild(threadWrapper);
                 });
 
             } catch (error) {
-                console.error("Error cargando comentarios:", error);
-                commentsContainer.innerHTML = '<p style="text-align:center; color:red;">Error al conectar con el servidor.</p>';
+                console.error("Error:", error);
+                commentsContainer.innerHTML = '<p style="color:red; text-align:center;">Error al cargar el muro.</p>';
             }
         }
 
-        function renderThread(comment) {
+        function generateCommentHTML(comment, isReply) {
             const dateStr = new Date(comment.fecha).toLocaleString();
-
-            // Lógica de nombre para Admin o Usuario
             const esAdmin = comment.nombre.includes("Verificador");
 
-            const nombreHTML = esAdmin
-                ? `<span style="color: #16a085; font-weight: bold;">${comment.nombre} 
-           <span style="font-size: 0.65rem; background: #1abc9c; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px;">EQUIPO</span></span>`
-                : `<span>${comment.nombre}</span>`;
+            const contenidoMostrar = isReply ? comment.contenido.split(' ').slice(1).join(' ') : comment.contenido;
 
-            const threadDiv = document.createElement('div');
-            threadDiv.className = esAdmin ? 'comment-item comentario-oficial' : 'comment-item';
+            const claseCard = esAdmin ? 'comment-item comentario-oficial' : (isReply ? 'reply-item' : 'comment-item');
 
-            threadDiv.innerHTML = `
-        <strong>${nombreHTML}</strong>
-        <small>${dateStr}</small>
-        <p>${comment.contenido}</p>
-        
-        <div class="actions">
-            <button class="btn-action" onclick="prepareReply('${comment.nombre}')">💬 Responder</button>
-            ${isAdmin ? `<button class="btn-action btn-delete" onclick="deleteComment(${comment.id})">🗑 Eliminar</button>` : ''}
+            return `
+        <div class="${claseCard}">
+            <strong>${esAdmin ? '🛡️' : '👤'} ${comment.nombre} 
+                ${esAdmin ? '<span style="font-size:0.6rem; background:#1abc9c; color:white; padding:2px 6px; border-radius:4px; margin-left:5px;">EQUIPO</span>' : ''}
+            </strong>
+            <small>${dateStr}</small>
+            <p>${contenidoMostrar}</p>
+            <div class="btn-action-group">
+                ${!isReply ? `<button class="btn-reply-action" onclick="prepareReply('${comment.nombre}')">💬 Responder</button>` : ''}
+                ${isAdmin ? `<button class="btn-reply-action btn-delete-action" onclick="deleteComment(${comment.id})">🗑 Eliminar</button>` : ''}
+            </div>
         </div>
     `;
-
-            commentsContainer.appendChild(threadDiv);
         }
 
-        // Función para facilitar la respuesta mencionando al usuario
         function prepareReply(user) {
-            const textarea = document.getElementById('comment');
-            textarea.value = `@${user} `;
-            textarea.focus();
-            // Scroll suave hacia el formulario
-            document.querySelector('.contact-container').scrollIntoView({ behavior: 'smooth' });
+            const txt = document.getElementById('comment');
+            txt.value = `@${user} `;
+            txt.focus();
+            window.scrollTo({ top: contactForm.offsetTop - 100, behavior: 'smooth' });
         }
 
 
