@@ -143,8 +143,21 @@
         .blog-img {
             width: 100%;
             height: 220px;
+            /* Ajusta esta altura según prefieras */
+
+            /* EL SECRETO PARA QUE NO SE CORTE: */
             background-size: cover;
+            /* La imagen llena el espacio sin deformarse */
             background-position: center;
+            /* Centra la imagen para que no se corten las caras */
+            background-repeat: no-repeat;
+
+            background-color: #2c3e50;
+            opacity: 0;
+            transition: opacity 0.6s ease-in;
+
+            /* Opcional: redondea las esquinas superiores para que encaje con la tarjeta */
+            border-radius: 8px 8px 0 0;
         }
 
         .blog-content {
@@ -622,6 +635,12 @@
         #canvas-particles {
             pointer-events: none;
         }
+
+
+        /* Esta clase la pondrá el JavaScript automáticamente */
+        .blog-img.loaded {
+            opacity: 1 !important;
+        }
     </style>
 </head>
 
@@ -655,8 +674,8 @@
 
         <div class="blog-grid">
             <article class="blog-card" onclick="openModal('respiracion')">
-                <div class="blog-img"
-                    style="background-image: url('https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600');">
+                <div class="blog-img lazy-bg"
+                    data-bg="https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600">
                 </div>
                 <div class="blog-content">
                     <span class="tag tag-mente">Mente</span>
@@ -666,8 +685,8 @@
             </article>
 
             <article class="blog-card" onclick="openModal('autoestima')">
-                <div class="blog-img" style="background-image: url('imgs/autoestima.jpg');">
-                </div>
+                <div class="blog-img lazy-bg" data-bg="imgs/autoestima.jpg"></div>
+
                 <div class="blog-content">
                     <span class="tag tag-social">Social</span>
                     <h3>El Espejo Interior</h3>
@@ -676,8 +695,7 @@
             </article>
 
             <article class="blog-card" onclick="openModal('sueño')">
-                <div class="blog-img" style="background-image: url('imgs/Higiene.jpg');">
-                </div>
+                <div class="blog-img lazy-bg" data-bg="imgs/Higiene.jpg"></div>
                 <div class="blog-content">
                     <span class="tag tag-cuerpo">Cuerpo</span>
                     <h3>Higiene del Sueño</h3>
@@ -686,18 +704,17 @@
             </article>
 
             <article class="blog-card" onclick="openModal('tiempo')">
-                <div class="blog-img" style="background-image: url('imgs/gestion_tiempo.jpg');">
-                </div>
+                <div class="blog-img lazy-bg" data-bg="imgs/gestion_tiempo.jpg"></div>
                 <div class="blog-content">
                     <span class="tag tag-mente">Mente</span>
                     <h3>Gestión del Tiempo</h3>
                     <p>Evita la procrastinación y el agobio académico con técnicas de organización efectiva...</p>
                 </div>
             </article>
+
             <article class="blog-card" onclick="openModal('resiliencia')">
-                <div class="blog-img"
-                    style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600');">
-                </div>
+                <div class="blog-img lazy-bg"
+                    data-bg="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600"></div>
                 <div class="blog-content">
                     <span class="tag tag-mente">Mente</span>
                     <h3>Resiliencia Emocional</h3>
@@ -706,9 +723,8 @@
             </article>
 
             <article class="blog-card" onclick="openModal('alimentacion')">
-                <div class="blog-img"
-                    style="background-image: url('https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600');">
-                </div>
+                <div class="blog-img lazy-bg"
+                    data-bg="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600"></div>
                 <div class="blog-content">
                     <span class="tag tag-cuerpo">Cuerpo</span>
                     <h3>Nutrición y Ánimo</h3>
@@ -717,8 +733,8 @@
             </article>
 
             <article class="blog-card" onclick="openModal('digital')">
-                <div class="blog-img"
-                    style="background-image: url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600');">
+                <div class="blog-img lazy-bg"
+                    data-bg="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600">
                 </div>
                 <div class="blog-content">
                     <span class="tag tag-digital">Digital</span>
@@ -728,8 +744,7 @@
             </article>
 
             <article class="blog-card" onclick="openModal('apoyo')">
-                <div class="blog-img" style="background-image: url('imgs/redes_apoyo.jpg');">
-                </div>
+                <div class="blog-img lazy-bg" data-bg="imgs/redes_apoyo.jpg"></div>
                 <div class="blog-content">
                     <span class="tag tag-social">Social</span>
                     <h3>Redes de Apoyo</h3>
@@ -1154,6 +1169,35 @@
             cards.forEach(card => {
                 observer.observe(card);
             });
+        });
+        document.addEventListener("DOMContentLoaded", function () {
+            const lazyImages = document.querySelectorAll(".lazy-bg");
+
+            // Si el navegador soporta IntersectionObserver (Carga inteligente)
+            if ("IntersectionObserver" in window) {
+                const observer = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const div = entry.target;
+                            const url = div.getAttribute("data-bg");
+
+                            if (url) {
+                                div.style.backgroundImage = `url('${url}')`;
+                                div.classList.add("loaded");
+                            }
+                            observer.unobserve(div);
+                        }
+                    });
+                }, { rootMargin: "100px" }); // Empieza a cargar 100px antes de verla
+
+                lazyImages.forEach(img => observer.observe(img));
+            } else {
+                // Si el navegador es viejo, cargamos todo de golpe como antes
+                lazyImages.forEach(div => {
+                    div.style.backgroundImage = `url('${div.getAttribute("data-bg")}')`;
+                    div.classList.add("loaded");
+                });
+            }
         });
     </script>
 </body>
