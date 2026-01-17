@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca | MenteSana</title>
+    <style>
+        :root {
+            --primary: #1abc9c;
+            --dark-bg: #1a252f;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text-light: #ecf0f1;
+            --modal-dark: #243447;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: var(--primary);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 20px;
+            list-style: none;
+        }
+
+        .nav-link {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #1abc9c;
+        }
+
+
+        .hamburger {
+            display: none;
+            cursor: pointer;
+        }
+
+        .bar {
+            display: block;
+            width: 25px;
+            height: 3px;
+            margin: 5px auto;
+            transition: all 0.3s ease-in-out;
+            background-color: white;
+        }
+
+
+        main {
+            flex: 1;
+            max-width: 1100px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        .intro-text {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .intro-text h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .intro-text p {
+            color: #bdc3c7;
+            font-size: 1.1rem;
+        }
+
+
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+        }
+
+        .blog-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .blog-img {
+            width: 100%;
+            height: 220px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .blog-content {
+            padding: 1.5rem;
+        }
+
+        .blog-content h3 {
+            color: var(--primary);
+            margin-bottom: 0.8rem;
+            font-size: 1.4rem;
+        }
+
+        .blog-content p {
+            color: #bdc3c7;
+            font-size: 0.95rem;
+        }
+
+        /* --- MODAL DE LECTURA OSCURO --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: var(--modal-dark);
+            color: var(--text-light);
+            width: 100%;
+            max-width: 850px;
+            max-height: 85vh;
+            border-radius: 20px;
+            position: relative;
+            overflow-y: auto;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: 0.3s;
+        }
+
+        .close-modal:hover {
+            color: var(--primary);
+        }
+
+        .modal-body h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .modal-body p {
+            margin-bottom: 1.2rem;
+            text-align: justify;
+            line-height: 1.8;
+            color: #cbd5e0;
+        }
+
+
+        .pdf-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border-left: 5px solid #e74c3c;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .pdf-link {
+            background: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .pdf-link:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            background-color: #2c3e50;
+            color: #bdc3c7;
+            text-align: center;
+            padding: 2rem;
+            margin-top: auto;
+        }
+
+
+        @media (max-width: 768px) {
+            .blog-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .hamburger.active .bar:nth-child(2) {
+                opacity: 0;
+            }
+
+            .hamburger.active .bar:nth-child(1) {
+                transform: translateY(8px) rotate(45deg);
+            }
+
+            .hamburger.active .bar:nth-child(3) {
+                transform: translateY(-8px) rotate(-45deg);
+            }
+
+            .nav-menu {
+                position: fixed;
+                left: -100%;
+                top: 70px;
+                flex-direction: column;
+                background-color: #2c3e50;
+                width: 100%;
+                text-align: center;
+                transition: 0.3s;
+                box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
+
+
+                max-height: calc(100vh - 70px);
+                overflow-y: auto;
+                padding-bottom: 30px;
+            }
+
+            .nav-menu.active {
+                left: 0;
+            }
+
+            .nav-item {
+                margin: 16px 0;
+            }
+
+            .pdf-container {
+                justify-content: center;
+                text-align: center;
+            }
+        }
+
+        .modal-content {
+            background: var(--modal-dark);
+            color: var(--text-light);
+            width: 100%;
+            max-width: 850px;
+            max-height: 85vh;
+            border-radius: 20px;
+            position: relative;
+            overflow-y: auto;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+
+            animation: aparecerRelajante 0.6s ease-out forwards;
+        }
+
+        @keyframes aparecerRelajante {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(0px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            transition: backdrop-filter 0.5s ease, opacity 0.5s ease;
+            opacity: 0;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            backdrop-filter: blur(12px);
+        }
+
+        .modal-content {
+            background: var(--modal-dark);
+            transform: scale(0.9) translateY(30px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        .modal-overlay.closing .modal-content {
+            transform: scale(0.9) translateY(-20px);
+            opacity: 0;
+        }
+
+        .modal-overlay.closing {
+            opacity: 0;
+            backdrop-filter: blur(0px);
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .tag-mente {
+            background: #3498db;
+            color: white;
+        }
+
+        .tag-cuerpo {
+            background: #e67e22;
+            color: white;
+        }
+
+        .tag-digital {
+            background: #9b59b6;
+            color: white;
+        }
+
+        .tag-social {
+            background: #f1c40f;
+            color: #2c3e50;
+        }
+
+        blockquote {
+            margin: 25px 0;
+            padding: 20px 30px;
+            border-left: 4px solid var(--primary);
+            background: rgba(26, 188, 156, 0.1);
+            font-style: italic;
+            font-size: 1.1rem;
+            color: #fff;
+            position: relative;
+        }
+
+        blockquote::before {
+            content: '"';
+            font-size: 4rem;
+            color: var(--primary);
+            position: absolute;
+            left: 5px;
+            top: -10px;
+            opacity: 0.3;
+        }
+
+        /* --- DISEÑO DE COMENTARIOS --- */
+        .comment-section {
+            margin-top: 50px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .comment-section h4 {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .comment-section h4::before {
+            content: '💬';
+            font-size: 1.2rem;
+        }
+
+        .comment-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .comment-input-name,
+        .comment-input-text {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px 15px;
+            color: white;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .comment-input-name:focus,
+        .comment-input-text:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(26, 188, 156, 0.05);
+            box-shadow: 0 0 10px rgba(26, 188, 156, 0.1);
+        }
+
+        .comment-input-text {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .btn-send-comment {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(26, 188, 156, 0.2);
+        }
+
+        .btn-send-comment:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26, 188, 156, 0.3);
+            filter: brightness(1.1);
+        }
+
+        /* --- LISTA DE COMENTARIOS PUBLICADOS --- */
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .comment-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+        }
+
+        .comment-author {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .comment-date {
+            color: #7f8c8d;
+        }
+
+        .comment-text {
+            color: #cbd5e0;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <nav class="navbar">
+            <a href="inicio.html" class="logo">Mente<span>Sana</span></a>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="inicio.html" class="nav-link">Inicio</a></li>
+                <li class="nav-item"><a href="causas.html" class="nav-link">Causas</a></li>
+                <li class="nav-item"><a href="sintomas.html" class="nav-link">Síntomas</a></li>
+                <li class="nav-item"><a href="ayuda.html" class="nav-link">Ayuda Emocional</a></li>
+                <li class="nav-item"><a href="ludica.html" class="nav-link">Expresión Lúdica</a></li>
+                <li class="nav-item"><a href="blog.html" class="nav-link">Biblioteca</a></li>
+                <li class="nav-item"><a href="contacto.html" class="nav-link">Contacto</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="intro-text">
+            <h1>Biblioteca de Bienestar</h1>
+            <p>Recursos seleccionados para fortalecer tu resiliencia y paz mental.</p>
+        </div>
+
+        <div class="blog-grid">
+            <article class="blog-card" onclick="openModal('respiracion')">
+                <div class="blog-img"
+                    style="background-image: url('https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600');">
+                </div>
+                <div class="blog-content">
+                    <span class="tag tag-mente">Mente</span>
+                    <h3>Respiración Consciente</h3>
+                    <p>Aprende cómo el control del oxígeno puede desactivar la respuesta de estrés en segundos...</p>
+                </div>
+            </article>
+
+            <article class="blog-card" onclick="openModal('autoestima')">
+                <div class="blog-img"
+                    style="background-image: url('https://images.unsplash.com/photo-1499209974431-9dac3adaf471?w=600');">
+                </div>
+                <div class="blog-content">
+                    <span class="tag tag-social">Social</span>
+                    <h3>El Espejo Interior</h3>
+                    <p>Descubre cómo el diálogo interno moldea tu realidad y cómo transformarlo en tu aliado...</p>
+                </div>
+            </article>
+
+            <article class="blog-card" onclick="openModal('sueño')">
+                <div class="blog-img"
+                    style="background-image: url('https://images.unsplash.com/photo-1511295742364-917e70351bc3?w=600');">
+                </div>
+                <div class="blog-content">
+                    <span class="tag tag-cuerpo">Cuerpo</span>
+                    <h3>Higiene del Sueño</h3>
+                    <p>¿Sabías que dormir bien es la base de tu salud mental? Mejora tu descanso hoy mismo...</p>
+                </div>
+            </article>
+
+            <article class="blog-card" onclick="openModal('tiempo')">
+                <div class="blog-img"
+                    style="background-image: url('https://images.unsplash.com/photo-1495364141860-b0d03973057b?w=600');">
+                </div>
+                <div class="blog-content">
+                    <span class="tag tag-mente">Mente</span>
+                    <h3>Gestión del Tiempo</h3>
+                    <p>Evita la procrastinación y el agobio académico con técnicas de organización efectiva...</p>
+                </div>
+            </article>
+            <article class="blog-card" onclick="openModal('resiliencia')">
+                <div class="blog-img"
+                    style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600');">
+                </div>
+                <div class="blog-content">
+                    <span class="tag tag-mente">Mente</span>
+                    <h3>Resiliencia Emocional</h3>
+                    <p>Convierte los desafíos en fuerza para tu futuro. Aprende a navegar las crisis...</p>
+                </div>
+            </article>
+
+            <article class="blog-card" onclick="openModal('alimentacion')">
+                <div class="blog-img"
+                    style="background-image: url('https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600');">
+                </div>
+                <div class="blog-content">
+                    <span class="tag tag-cuerpo">Cuerpo</span>
+                    <h3>Nutrición y Ánimo</h3>
+                    <p>Cómo lo que comes influye en tu felicidad. El eje intestino-cerebro explicado...</p>
+                </div>
+            </article>
+
+            <article class="blog-card" onclick="openModal('digital')">
+                <div class="blog-img"
+                    style="background-image: url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600');">
+                </div>
+                <div class="blog-content">
+                    <span class="tag tag-digital">Digital</span>
+                    <h3>Bienestar Digital</h3>
+                    <p>Límites saludables para las redes sociales y cómo evitar la fatiga mental...</p>
+                </div>
+            </article>
+
+            <article class="blog-card" onclick="openModal('apoyo')">
+                <div class="blog-img"
+                    style="background-image: url('https://images.unsplash.com/photo-1521791136064-7986c2959213?w=600');">
+                </div>
+                <div class="blog-content">
+                    <span class="tag tag-digital">Digital</span>
+                    <h3>Redes de Apoyo</h3>
+                    <p>La importancia de conectar con otros y la valentía de saber pedir ayuda...</p>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2023 Proyecto de Apoyo Estudiantil. Todos los derechos reservados.</p>
+        <p>Institución Educativa Fiscal - Dolores Sucre</p>
+    </footer>
+
+    <script>
+        const hamburger = document.querySelector(".hamburger");
+        const navMenu = document.querySelector(".nav-menu");
+
+        hamburger.addEventListener("click", () => {
+            hamburger.classList.toggle("active");
+            navMenu.classList.toggle("active");
+        });
+
+        // Función para marcar el enlace activo
+        function setActiveLink() {
+            const currentPath = window.location.pathname.split("/").pop(); 
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        }
+
+        window.onload = setActiveLink;
+
+        const lecturas = {
+            'respiracion': {
+                titulo: 'Respiración Consciente: El Interruptor del Calma',
+                texto: `
+                    <p>En el ajetreo de los exámenes y las responsabilidades del bachillerato, nuestra respiración suele volverse superficial y rápida. Esto le indica a nuestro cerebro que estamos en peligro, activando el cortisol, la hormona del estrés.</p>
+                    <p>La respiración consciente no es solo "tomar aire"; es una técnica neurobiológica. Al prolongar la exhalación, estimulamos el nervio vago, encargado de enviar una señal de relajación a todo el cuerpo.</p>
+                    <p><b>La Técnica 4-7-8:</b> Inhala por 4 segundos, mantén por 7 y exhala por 8. Repetir esto cuatro veces puede detener un ataque de ansiedad en potencia. Practicar esto antes de dormir permitirá que tu mente sepa que está segura.</p>
+                    <div class="pdf-container">
+                        <span>Guía completa de ejercicios respiratorios:</span>
+                        <a href="https://www.who.int/docs/default-source/mental-health/sh-2020-spa-web.pdf" target="_blank" class="pdf-link">Descargar PDF</a>
+                    </div>
+                `
+            },
+            'autoestima': {
+                titulo: 'Autoestima: Sanando tu Diálogo Interno',
+                texto: `
+                    <p>La autoestima no se trata de creer que eres perfecto, sino de aceptarte mientras trabajas en tu crecimiento. Para muchos jóvenes, la presión social crea un crítico interno extremadamente severo.</p>
+                    <p>A menudo somos más crueles con nosotros mismos de lo que seríamos con un amigo. El primer paso es identificar esos pensamientos negativos y cuestionar su veracidad. Construir una autoestima sólida requiere autocompasión.</p>
+                    <p>Reconocer que fallar es parte del proceso de aprendizaje es vital. Tu valor no está definido por tus logros académicos, sino por tu integridad y tu esfuerzo diario.</p>
+                    <div class="pdf-container">
+                        <span>Cuaderno de ejercicios para la autoestima:</span>
+                        <a href="https://ibp-psicologia.com/wp-content/uploads/2020/03/Ejercicios-Autoestima.pdf" target="_blank" class="pdf-link">Descargar PDF</a>
+                    </div>
+                `
+            },
+            'sueño': {
+                titulo: 'Higiene del Sueño: El Pilar del Rendimiento',
+                texto: `
+                    <p>Dormir no es un lujo, es una función reparadora esencial. Para un bachiller, la falta de sueño se traduce en irritabilidad, falta de memoria y mayor riesgo de depresión.</p>
+                    <p>La higiene del sueño implica crear rutinas: evitar pantallas 30 minutos antes de acostarse, mantener la habitación fresca y oscura, y evitar cafeína por la tarde. El cerebro necesita señales claras de que el día ha terminado.</p>
+                    <p>Cuando duermes lo suficiente, tu cerebro consolida lo que estudiaste y regula tus emociones, permitiéndote enfrentar los desafíos del día siguiente con mayor claridad y paciencia.</p>
+                    <div class="pdf-container">
+                        <span>Recomendaciones para un mejor descanso:</span>
+                        <a href="https://www.isglobal.org/documents/10179/7740833/17+Pautas+Higiene+Sue%C3%B1o.pdf" target="_blank" class="pdf-link">Descargar PDF</a>
+                    </div>
+                `
+            },
+            'tiempo': {
+                titulo: 'Gestión del Tiempo: Menos Agobio, Más Resultados',
+                texto: `
+                    <p>La sensación de "no tener tiempo" es una de las mayores fuentes de ansiedad académica. Organizar tus tareas no significa llenar cada minuto de estudio, sino aprender a priorizar lo importante.</p>
+                    <p><b>La Técnica Pomodoro:</b> Trabaja en bloques de 25 minutos seguidos de 5 de descanso. Esto mantiene tu concentración alta y evita el agotamiento mental. Además, aprender a decir "no" a distracciones digitales durante tus bloques de trabajo cambiará tu productividad.</p>
+                    <p>Recuerda incluir siempre tiempo para el ocio y el descanso en tu planificación; una agenda sin espacios libres es una receta para el estrés crónico.</p>
+                    <div class="pdf-container">
+                        <span>Plantilla y guía de gestión del tiempo:</span>
+                        <a href="https://www.uaeh.edu.mx/docencia/VI_Lectura/bachillerato/documentos/2014/LECT111.pdf" target="_blank" class="pdf-link">Descargar PDF</a>
+                    </div>
+                `
+            },
+            'resiliencia': {
+                titulo: 'Resiliencia: El Arte de Navegar la Tormenta',
+                texto: `
+        <p>La resiliencia no es una cualidad mágica con la que se nace; es una habilidad que se desarrolla a través de la experiencia. En el entorno escolar, esto significa aprender que un fracaso académico no define tu inteligencia, sino tu estrategia actual.</p>
+        <p><b>Los tres pilares de la resiliencia:<br></b> 1) Aceptación de la realidad (esto está pasando), <br>2) Búsqueda de sentido (¿qué puedo aprender de esto?) y <br>3) Capacidad de improvisar (¿cómo puedo resolverlo con lo que tengo ahora?).</p>
+        <p>Cuando enfrentas un desafío, tu cerebro libera hormonas que pueden nublar tu juicio. La persona resiliente hace una pausa, respira y se pregunta: "¿Esto importará dentro de cinco años?". Esta perspectiva ayuda a reducir el impacto emocional inmediato y permite actuar con mayor claridad.</p>
+        <p>Recuerda que ser fuerte no significa no sentir dolor, sino permitirte sentirlo, procesarlo y seguir caminando con una nueva lección en la mochila.</p>
+        <blockquote>"El fracaso es solo la oportunidad de comenzar de nuevo, esta vez de forma más inteligente."</blockquote>
+        <div class="pdf-container">
+            <span>Guía práctica de fortalecimiento emocional:</span>
+            <a href="https://www.euskadi.eus/contenidos/informacion/dia_internacional_resiliencia/es_def/adjuntos/guia_resiliencia.pdf" target="_blank" class="pdf-link">Descargar PDF</a>
+        </div>
+    `
+            },
+            'alimentacion': {
+                titulo: 'Nutrición y Ánimo: El Eje Intestino-Cerebro',
+                texto: `
+        <p>Existe una comunicación constante entre tu sistema digestivo y tu cerebro. De hecho, el nervio vago actúa como una autopista de información donde el intestino envía mensajes sobre tu estado de bienestar. Si tu dieta se basa en alimentos ultraprocesados, tu cerebro recibe señales de inflamación, lo que se traduce en neblina mental y desgana.</p>
+        <p><b>Alimentos para el estudio:</b> Los ácidos grasos Omega-3 (presentes en nueces y pescados) son esenciales para las membranas de tus neuronas. Los carbohidratos de absorción lenta (avena, granos integrales) evitan los picos de azúcar que causan sueño a mitad de la mañana.</p>
+        <p>Un factor olvidado es la hidratación: una deshidratación leve del 2% reduce drásticamente tu capacidad de concentración y memoria a corto plazo. Antes de buscar una bebida energética llena de azúcar, prueba a beber un vaso de agua; tu cerebro te lo agradecerá con mayor claridad.</p>
+        <div class="pdf-container">
+            <span>Alimentación saludable para estudiantes:</span>
+            <a href="https://www.fcomci.com/sites/default/files/guia_alimentacion_salud_mental.pdf" target="_blank" class="pdf-link">Descargar PDF</a>
+        </div>
+    `
+            },
+            'digital': {
+                titulo: 'Bienestar Digital: Protegiendo tu Enfoque',
+                texto: `
+        <p>Vivimos en la "economía de la atención", donde las aplicaciones están diseñadas para mantenerte conectado el mayor tiempo posible mediante recompensas de dopamina (likes, notificaciones). El problema es que este ciclo agota tus reservas de energía mental y te deja con una sensación de vacío o ansiedad.</p>
+        <p><b>La trampa de la comparación:</b> En redes sociales, comparamos nuestro "detrás de cámaras" con el "show de luces" de los demás. Olvidamos que lo que vemos es una versión filtrada y curada de la realidad, lo que distorsiona nuestra percepción de éxito y belleza.</p>
+        <p><b>Reto de desconexión:</b> Intenta el "Modo Avión" durante las dos primeras horas de estudio y la última hora antes de dormir. Recuperar el control de tu atención te permitirá estudiar en menos tiempo y con mucha menos fatiga visual y mental.</p>
+        <div class="pdf-container">
+            <span>Manual de higiene digital y redes:</span>
+            <a href="https://www.is4k.es/sites/default/files/contenidos/materiales/guias/is4k_guia_bienestar_digital.pdf" target="_blank" class="pdf-link">Descargar PDF</a>
+        </div>
+    `
+            },
+            'apoyo': {
+                titulo: 'Redes de Apoyo: La Fuerza de la Conexión',
+                texto: `
+        <p>Desde el punto de vista evolutivo, el aislamiento era una sentencia de muerte. Por eso, cuando nos sentimos solos o desconectados, nuestro cerebro activa áreas relacionadas con el dolor físico. Tener una red de apoyo no significa tener mil amigos en Facebook, sino contar con dos o tres personas con las que puedas ser vulnerable.</p>
+        <p><b>¿Cómo construir apoyo?</b> Empieza por ser tú esa red para alguien más. Escuchar sin juzgar y validar las emociones de tus compañeros crea un entorno de seguridad mutua. En el colegio, tus tutores, el personal del DECE o tus mejores amigos son parte de este ecosistema.</p>
+        <p>No esperes a estar en una crisis total para hablar. Compartir una pequeña preocupación hoy evita que se convierta en una montaña mañana. Pedir ayuda no es rendirse, es negarse a rendirse solo.</p>
+        <blockquote>"Pedir ayuda no es rendirse, es negarse a rendirse solo."</blockquote>
+        <div class="pdf-container">
+            <span>Folleto sobre salud social y comunidad:</span>
+            <a href="https://www.paho.org/es/documentos/folleto-apoyo-social" target="_blank" class="pdf-link">Descargar PDF</a>
+        </div>
+    `
+            }
+        };
+
+        // MODIFICACIÓN: Función para abrir (asegúrate de que incluya cargarComentarios)
+        function openModal(id) {
+            const data = lecturas[id];
+            const overlay = document.getElementById('modalOverlay');
+
+            const htmlComentarios = `
+        <div class="comment-section">
+            <h4>Comunidad y Experiencias</h4>
+            <div class="comment-form">
+                <input type="text" id="userName" class="comment-input-name" placeholder="Tu nombre o apodo...">
+                <textarea id="userComment" class="comment-input-text" placeholder="Comparte tu reflexión o consejo..."></textarea>
+                <button class="btn-send-comment" onclick="saveComment('${id}')">Publicar comentario</button>
+            </div>
+            <div class="comments-list" id="commentsList">Cargando pensamientos...</div>
+        </div>
+    `;
+
+            document.getElementById('modalBody').innerHTML = `<h2>${data.titulo}</h2>${data.texto}${htmlComentarios}`;
+
+            overlay.style.display = 'flex';
+            setTimeout(() => overlay.classList.add('active'), 10);
+
+            cargarComentarios(id); // Cargamos los comentarios guardados
+        }
+
+        // MODIFICACIÓN: Función para cerrar (Activa la animación que ya tienes en CSS)
+        function closeModal() {
+            const overlay = document.getElementById('modalOverlay');
+            overlay.classList.remove('active');
+            overlay.classList.add('closing');
+
+            // Esperamos 500ms (lo que dura tu transición CSS) antes de ocultarlo
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                overlay.classList.remove('closing');
+            }, 500);
+        }
+
+        // EXTRA: Cerrar al hacer clic fuera del cuadro blanco
+        window.onclick = function (event) {
+            const overlay = document.getElementById('modalOverlay');
+            if (event.target == overlay) {
+                closeModal();
+            }
+        }
+
+        async function saveComment(lecturaId) {
+            const nameInput = document.getElementById('userName');
+            const commentInput = document.getElementById('userComment');
+
+            const nombre = nameInput.value.trim();
+            const contenido = commentInput.value.trim();
+
+            if (!nombre || !contenido) {
+                alert("Por favor, completa ambos campos para comentar.");
+                return;
+            }
+
+            const nuevoComentario = {
+                lectura_id: lecturaId,
+                nombre: nombre,
+                contenido: contenido
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/comentarios', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(nuevoComentario)
+                });
+
+                // --- CAMBIO AQUÍ ---
+                if (response.ok) {
+                    nameInput.value = '';
+                    commentInput.value = '';
+                    cargarComentarios(lecturaId);
+                } else {
+                    // Intentamos obtener el mensaje de error del servidor (el de las palabras prohibidas)
+                    const errorData = await response.json();
+                    alert(errorData.error || "Hubo un error al guardar el comentario.");
+                }
+                // -------------------
+
+            } catch (error) {
+                console.error("Error de conexión:", error);
+                alert("No se pudo conectar con el servidor. ¿Está encendido?");
+            }
+        }
+
+        async function cargarComentarios(lecturaId) {
+            const list = document.getElementById('commentsList');
+
+            try {
+                const response = await fetch(`http://localhost:3000/comentarios/${lecturaId}`);
+                const comentarios = await response.json();
+
+                if (comentarios.length === 0) {
+                    list.innerHTML = '<p style="color: #7f8c8d; font-size: 0.9rem;">Aún no hay comentarios. ¡Sé el primero!</p>';
+                    return;
+                }
+
+                list.innerHTML = comentarios.map(c => `
+            <div class="comment-item">
+                <div class="comment-header">
+                    <span class="comment-author">${c.nombre}</span>
+                    <span class="comment-date">${new Date(c.fecha).toLocaleDateString()}</span>
+                </div>
+                <p class="comment-text">${c.contenido}</p>
+            </div>
+        `).join('');
+
+            } catch (error) {
+                list.innerHTML = '<p style="color: #e74c3c;">Error al cargar comentarios.</p>';
+            }
+        }
+    </script>
+</body>
+
+</html>

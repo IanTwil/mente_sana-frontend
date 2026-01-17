@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Moderación | MenteSana</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #1a1a2e;
+            color: white;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #333;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #16a085;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Panel de Control de Comentarios</h1>
+    <div id="adminList">Cargando comentarios para moderar...</div>
+
+    <script>
+        async function loadAll() {
+            const res = await fetch('http://localhost:3000/admin/todo');
+            const data = await res.json();
+            let html = '<table><tr><th>ID</th><th>Lectura</th><th>Autor</th><th>Comentario</th><th>Acción</th></tr>';
+            data.forEach(c => {
+                html += `<tr>
+                    <td>${c.id}</td>
+                    <td>${c.lectura_id}</td>
+                    <td>${c.nombre}</td>
+                    <td>${c.contenido}</td>
+                    <td><button class="btn-delete" onclick="deleteComm(${c.id})">Eliminar</button></td>
+                </tr>`;
+            });
+            document.getElementById('adminList').innerHTML = html + '</table>';
+        }
+
+        async function deleteComm(id) {
+            const password = prompt("Ingrese la clave de administrador para confirmar:");
+
+            if (!password) return; 
+
+            if (confirm('¿Seguro que quieres borrar este comentario?')) {
+                try {
+                    const response = await fetch(`http://localhost:3000/comentarios/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'x-admin-key': password
+                        }
+                    });
+
+                    if (response.ok) {
+                        alert("Comentario eliminado con éxito.");
+                        loadAll();
+                    } else {
+                        const mensaje = await response.text();
+                        alert("Error: " + mensaje);
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    alert("No se pudo conectar con el servidor.");
+                }
+            }
+        }
+        loadAll();
+    </script>
+</body>
+
+</html>

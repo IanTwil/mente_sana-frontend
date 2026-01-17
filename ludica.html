@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expresión Lúdica | MenteSana</title>
+    <style>
+        /* --- ESTILOS GENERALES --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f7f6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        /* --- HEADER Y NAVEGACIÓN --- */
+        header {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .logo span {
+            color: #1abc9c;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-link {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #ecf0f1;
+            transition: 0.3s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #1abc9c;
+        }
+
+        /* ANIMACIÓN HAMBURGUESA */
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .bar {
+            display: block;
+            width: 25px;
+            height: 3px;
+            margin: 5px auto;
+            transition: all 0.3s ease-in-out;
+            background-color: white;
+        }
+
+        @media (max-width: 768px) {
+            .hamburger {
+                display: block;
+            }
+
+            .hamburger.active .bar:nth-child(2) {
+                opacity: 0;
+            }
+
+            .hamburger.active .bar:nth-child(1) {
+                transform: translateY(8px) rotate(45deg);
+            }
+
+            .hamburger.active .bar:nth-child(3) {
+                transform: translateY(-8px) rotate(-45deg);
+            }
+
+            .nav-menu {
+                position: fixed;
+                left: -100%;
+                top: 70px;
+                flex-direction: column;
+                background-color: #2c3e50;
+                width: 100%;
+                text-align: center;
+                transition: 0.3s;
+                padding: 20px 0;
+                max-height: calc(100vh - 70px);
+                overflow-y: auto;
+                padding-bottom: 30px;
+            }
+
+            .nav-menu.active {
+                left: 0;
+            }
+
+            .nav-item {
+                margin: 15px 0;
+            }
+        }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background-color: #2c3e50;
+        }
+
+        @keyframes heroBgFadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: url('imgs/expresionludica.gif');
+            background-size: cover;
+            background-position: center;
+            filter: blur(3px);
+            z-index: 1;
+            opacity: 0;
+            animation: heroBgFadeIn 1.5s ease-out forwards;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgba(44, 62, 80, 0.7);
+            z-index: 2;
+            opacity: 0;
+            animation: heroBgFadeIn 1.5s ease-out forwards;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 3;
+            color: white;
+            padding: 20px;
+            max-width: 800px;
+            animation: fadeInUp 1.2s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-content h1 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            font-weight: 300;
+        }
+
+        /* --- MAIN LAYOUT --- */
+        main {
+            flex: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* --- CONCEPTO --- */
+        .concept-section {
+            background: white;
+            padding: 3rem;
+            margin-top: -50px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .concept-section h2 {
+            color: #1abc9c;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+
+        .concept-section p {
+            color: #555;
+            font-size: 1.05rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        /* --- TIPOS DE EXPRESIÓN (Cards) --- */
+        .expression-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 4rem;
+        }
+
+        .type-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-top: 5px solid transparent;
+        }
+
+        .type-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .icon-circle {
+            width: 70px;
+            height: 70px;
+            background: #f0f3f4;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        .type-card h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .type-card p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .card-theater {
+            border-top-color: #e74c3c;
+        }
+
+        .card-art {
+            border-top-color: #f1c40f;
+        }
+
+        .card-sport {
+            border-top-color: #3498db;
+        }
+
+        /* --- SECCIÓN DE JUEGOS DIGITALES (MODIFICADO PARA TAMAÑO GRANDE) --- */
+        .games-intro {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-top: 2px solid #eee;
+            padding-top: 3rem;
+        }
+
+        .games-container {
+            /* CAMBIO CLAVE: Flex en columna para que ocupen todo el ancho */
+            display: flex;
+            flex-direction: column;
+            gap: 60px;
+            /* Más espacio entre juegos */
+            max-width: 900px;
+            /* Ancho máximo controlado para que no se deforme en pantallas gigantes */
+            margin: 0 auto 50px auto;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: 0.3s;
+            border: 1px solid #eee;
+            /* Borde sutil */
+        }
+
+        .game-info {
+            padding: 20px;
+            background: #2c3e50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .game-info div {
+            text-align: left;
+        }
+
+        .game-info h3 {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+
+        .game-info p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .iframe-wrapper {
+            position: relative;
+            width: 100%;
+            padding-top: 60%;
+            background-color: #eee;
+        }
+
+        .iframe-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+
+        @media (max-width: 600px) {
+            .iframe-wrapper {
+                padding-top: 100%;
+
+            }
+
+            .game-info {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .game-info div {
+                text-align: center;
+            }
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            background-color: #2c3e50;
+            color: #bdc3c7;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <nav class="navbar">
+            <a href="inicio.html" class="logo">Mente<span>Sana</span></a>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="inicio.html" class="nav-link">Inicio</a></li>
+                <li class="nav-item"><a href="causas.html" class="nav-link">Causas</a></li>
+                <li class="nav-item"><a href="sintomas.html" class="nav-link">Síntomas</a></li>
+                <li class="nav-item"><a href="ayuda.html" class="nav-link">Ayuda Emocional</a></li>
+                <li class="nav-item"><a href="ludica.html" class="nav-link active">Expresión Lúdica</a></li>
+                <li class="nav-item"><a href="blog.html" class="nav-link">Biblioteca</a></li>
+                <li class="nav-item"><a href="contacto.html" class="nav-link">Contacto</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+            </div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Sanar, Crecer y Aprender</h1>
+            <p>Descubre el poder de la expresión lúdica para fortalecer tu resiliencia.</p>
+        </div>
+    </section>
+
+    <main>
+        <section class="concept-section">
+            <h2>Más allá del Entretenimiento</h2>
+            <p>
+                La expresión lúdica y las actividades recreativas son herramientas poderosas para el manejo de la
+                depresión y la ansiedad en adolescentes. Más allá de pasar el rato, estas actividades fomentan la
+                autoexploración, la liberación de emociones y el desarrollo de habilidades sociales y de afrontamiento.
+            </p>
+            <p>
+                No se trata solo de jugar, sino de aprender, sanar y crecer a través de experiencias positivas que
+                refuerzan la autoestima y la capacidad de superar desafíos.
+            </p>
+        </section>
+
+        <section class="expression-types">
+            <div class="type-card card-theater">
+                <div class="icon-circle">🎭</div>
+                <h3>Teatro y Dramatización</h3>
+                <p>Permite "encarnar" diferentes realidades y emociones, ofreciendo un espacio seguro para practicar la
+                    empatía y la expresión verbal y corporal.</p>
+            </div>
+
+            <div class="type-card card-art">
+                <div class="icon-circle">🎨</div>
+                <h3>Arte y Pintura</h3>
+                <p>Da forma y color a sentimientos que a veces son inexpresables con palabras. Es un refugio creativo
+                    para canalizar la ansiedad.</p>
+            </div>
+
+            <div class="type-card card-sport">
+                <div class="icon-circle">⚽</div>
+                <h3>Deporte y Movimiento</h3>
+                <p>Canaliza la energía acumulada, libera endorfinas naturales y mejora el estado de ánimo mientras
+                    conectas con tus compañeros.</p>
+            </div>
+        </section>
+
+        <div class="games-intro">
+            <h2 style="color: #2c3e50;">Gimnasio Mental Digital</h2>
+            <p style="color: #666; max-width: 600px; margin: 10px auto;">
+                Como parte de nuestras actividades, te ofrecemos estos desafíos interactivos. <br>
+                <strong>Nota:</strong> Si ves publicidad sobre el juego, busca la "X" pequeña, espera unos segundos o
+                simplemente ignórala.
+            </p>
+        </div>
+        <section class="mission-game-section" id="game-area"
+            style="margin-bottom: 4rem; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <div
+                style="background: #2c3e50; padding: 30px; border-radius: 20px; text-align: center; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.15); position: relative;">
+                <h2 style="color: #1abc9c; margin-bottom: 10px;">Misión: El Camino a la Luz</h2>
+
+                <div id="canvas-container"
+                    style="background: #000; border-radius: 10px; overflow: hidden; border: 3px solid #34495e; position: relative; max-width: 800px; margin: 0 auto;">
+                    <canvas id="missionGame" width="800" height="400"
+                        style="display: block; width: 100%; height: auto;"></canvas>
+
+                    <div id="game-ui"
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                        <p id="game-msg"
+                            style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); padding: 10px 25px; border-radius: 30px; color: #f1c40f; font-weight: bold; border: 2px solid #f1c40f; transition: 0.3s; width: 80%; font-size: 0.9rem;">
+                            ¡Usa las flechas para recolectar esperanza!</p>
+
+                        <div id="win-screen"
+                            style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26, 188, 156, 0.95); flex-direction: column; justify-content: center; align-items: center; pointer-events: auto; backdrop-filter: blur(5px);">
+                            <h2 style="font-size: 3rem; text-shadow: 2px 2px 10px rgba(0,0,0,0.3); margin: 0;">¡LO
+                                LOGRASTE!</h2>
+                            <p id="final-time"
+                                style="font-size: 1.4rem; margin: 15px 0; color: #2c3e50; font-weight: bold;">Tiempo:
+                                00:00</p>
+                            <button onclick="restartMission()"
+                                style="background: #2c3e50; color: white; border: none; padding: 12px 40px; border-radius: 30px; cursor: pointer; font-weight: bold; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">Jugar
+                                de nuevo</button>
+                        </div>
+
+                        <div id="fullscreen-btn" onclick="toggleFullScreen()"
+                            style="position: absolute; bottom: 15px; right: 15px; pointer-events: auto; background: rgba(0,0,0,0.5); color: white; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 0.7rem; border: 1px solid #555;">
+                            ⛶ FULLSCREEN</div>
+                    </div>
+                </div>
+
+                <div
+                    style="margin-top: 20px; display: flex; justify-content: center; gap: 15px; align-items: center; flex-wrap: wrap;">
+                    <div
+                        style="background: rgba(0,0,0,0.2); padding: 10px 20px; border-radius: 12px; min-width: 140px;">
+                        ⏱️ <span id="game-timer" style="font-family: monospace; font-weight: bold;">0.0s</span>
+                    </div>
+                    <div
+                        style="background: rgba(0,0,0,0.2); padding: 10px 20px; border-radius: 12px; min-width: 140px;">
+                        ✨ <span id="game-progress" style="color: #1abc9c; font-weight: bold;">0%</span>
+                    </div>
+                    <button onclick="restartMission()"
+                        style="background: #e74c3c; color: white; border: none; padding: 10px 25px; border-radius: 25px; cursor: pointer; font-weight: bold;">Reiniciar</button>
+                </div>
+                <p style="margin-top: 15px; font-size: 0.8rem; color: #bdc3c7;">Tip: Puedes usar la tecla Espacio o
+                    Flecha Arriba para saltar más alto.</p>
+            </div>
+        </section>
+
+        <script>
+            // --- MOTOR DE AUDIO ---
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            function playSfx(type) {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                const now = audioCtx.currentTime;
+                if (type === 'jump') {
+                    osc.type = 'triangle'; osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(450, now + 0.1);
+                    gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(); osc.stop(now + 0.1);
+                } else if (type === 'collect') {
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+                    gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(); osc.stop(now + 0.2);
+                } else if (type === 'win') {
+                    [523, 659, 783, 1046].forEach((f, i) => {
+                        const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                        o.frequency.value = f; o.connect(g); g.connect(audioCtx.destination);
+                        g.gain.setValueAtTime(0, now + (i * 0.1)); g.gain.linearRampToValueAtTime(0.1, now + (i * 0.1) + 0.1);
+                        g.gain.linearRampToValueAtTime(0, now + 0.8); o.start(now + (i * 0.1)); o.stop(now + 0.9);
+                    });
+                }
+            }
+
+            // --- LÓGICA ---
+            const canvas = document.getElementById("missionGame");
+            const ctx = canvas.getContext("2d");
+            const msgBox = document.getElementById("game-msg");
+            const progressText = document.getElementById("game-progress");
+            const timerText = document.getElementById("game-timer");
+            const winScreen = document.getElementById("win-screen");
+
+            let player = { x: 50, y: 300, w: 25, h: 25, speed: 5.5, velX: 0, velY: 0, jumping: false, color: "#1abc9c" };
+            let fragments = [
+                { x: 150, y: 310, gathered: false, msg: "¡Bien hecho! Reconocer tus sentimientos es el primer paso." },
+                { x: 380, y: 180, gathered: false, msg: "Pedir ayuda es de valientes. ¡Sigue subiendo!" },
+                { x: 680, y: 130, gathered: false, msg: "Cada pequeño esfuerzo cuenta. ¡Casi lo tienes!" },
+                { x: 750, y: 310, gathered: false, msg: "¡ENERGÍA REUNIDA! ¡VUELVE AL PORTAL DE INICIO!" }
+            ];
+            let platforms = [
+                { x: 0, y: 360, w: 800, h: 40 },
+                { x: 330, y: 230, w: 100, h: 12 },
+                { x: 650, y: 180, w: 100, h: 12 }
+            ];
+            let particles = []; let keys = {}; let collectedCount = 0; let gameActive = true;
+            let startTime = Date.now(); let portal = { x: 30, y: 260, w: 60, h: 100, active: false };
+
+            window.addEventListener("keydown", (e) => {
+                keys[e.code] = true;
+                if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) e.preventDefault();
+            });
+            window.addEventListener("keyup", (e) => keys[e.code] = false);
+
+            function createExplosion(x, y, color, count = 20) {
+                for (let i = 0; i < count; i++) {
+                    particles.push({ x, y, vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10, life: 1, color });
+                }
+            }
+
+            function toggleFullScreen() {
+                let el = document.getElementById("canvas-container");
+                if (!document.fullscreenElement) el.requestFullscreen(); else document.exitFullscreen();
+            }
+
+            function update() {
+                if (!gameActive) return;
+                timerText.innerText = ((Date.now() - startTime) / 1000).toFixed(1) + "s";
+
+                if (keys["ArrowRight"]) player.velX = player.speed;
+                else if (keys["ArrowLeft"]) player.velX = -player.speed;
+                else player.velX *= 0.85;
+                player.x += player.velX;
+
+                // --- AJUSTE DE SALTO ---
+                if ((keys["ArrowUp"] || keys["Space"]) && !player.jumping) {
+                    player.velY = -16; // Incrementado de -14 a -16 para más altura
+                    player.jumping = true;
+                    playSfx('jump');
+                }
+                player.velY += 0.7; // Suavizado de 0.8 a 0.7 para mayor tiempo en el aire
+                player.y += player.velY;
+
+                if (player.y > 400) { player.y = 300; player.velY = 0; player.x = 50; }
+
+                platforms.forEach(plat => {
+                    if (player.x < plat.x + plat.w && player.x + player.w > plat.x &&
+                        player.y + player.h > plat.y && player.y + player.h < plat.y + plat.h + 10) {
+                        if (player.velY >= 0) {
+                            player.y = plat.y - player.h; player.jumping = false; player.velY = 0;
+                        }
+                    }
+                });
+
+                fragments.forEach(f => {
+                    if (!f.gathered && player.x < f.x + 20 && player.x + player.w > f.x &&
+                        player.y < f.y + 20 && player.y + player.h > f.y) {
+                        f.gathered = true; collectedCount++;
+                        playSfx('collect'); createExplosion(f.x + 10, f.y + 10, "#f1c40f");
+                        msgBox.innerText = f.msg;
+                        progressText.innerText = Math.round((collectedCount / fragments.length) * 100) + "%";
+                        if (collectedCount === fragments.length) portal.active = true;
+                    }
+                });
+
+                if (portal.active && player.x < portal.x + portal.w && player.x + player.w > portal.x &&
+                    player.y < portal.y + portal.h && player.y + player.h > portal.y) {
+                    gameActive = false; playSfx('win');
+                    createExplosion(player.x + 12, player.y + 12, "#fff", 80);
+                    document.getElementById("final-time").innerText = "Tiempo: " + timerText.innerText;
+                    setTimeout(() => { winScreen.style.display = "flex"; }, 500);
+                }
+
+                particles.forEach((p, i) => {
+                    p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+                    if (p.life <= 0) particles.splice(i, 1);
+                });
+            }
+
+            function draw() {
+                let prog = collectedCount / fragments.length;
+                ctx.fillStyle = `rgb(${15 + prog * 10}, ${20 + prog * 30}, ${40 + prog * 50})`;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                if (portal.active) {
+                    let pulse = Math.sin(Date.now() / 150) * 8;
+                    ctx.shadowBlur = 15 + pulse; ctx.shadowColor = "#1abc9c";
+                    ctx.fillStyle = "#1abc9c"; ctx.fillRect(portal.x, portal.y - pulse / 2, portal.w, portal.h + pulse);
+                    ctx.fillStyle = "white"; ctx.font = "bold 12px sans-serif"; ctx.fillText("META", portal.x + 12, portal.y - 10);
+                }
+
+                ctx.shadowBlur = 0; ctx.fillStyle = "#34495e";
+                platforms.forEach(plat => ctx.fillRect(plat.x, plat.y, plat.w, plat.h));
+
+                fragments.forEach(f => {
+                    if (!f.gathered) {
+                        ctx.shadowBlur = 15; ctx.shadowColor = "#f1c40f"; ctx.fillStyle = "#f1c40f";
+                        ctx.beginPath(); ctx.arc(f.x + 10, f.y + 10 + Math.sin(Date.now() / 200) * 6, 8, 0, Math.PI * 2); ctx.fill();
+                    }
+                });
+
+                ctx.shadowBlur = 15; ctx.shadowColor = portal.active ? "#fff" : "#1abc9c";
+                ctx.fillStyle = portal.active ? "#fff" : "#1abc9c";
+                ctx.fillRect(player.x, player.y, player.w, player.h);
+
+                ctx.shadowBlur = 0;
+                particles.forEach(p => { ctx.globalAlpha = p.life; ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 3, 3); });
+                ctx.globalAlpha = 1;
+            }
+
+            function loop() { update(); draw(); requestAnimationFrame(loop); }
+            function restartMission() {
+                player.x = 50; player.y = 300; player.velX = 0; player.velY = 0;
+                collectedCount = 0; gameActive = true; startTime = Date.now();
+                portal.active = false; particles = []; fragments.forEach(f => f.gathered = false);
+                winScreen.style.display = "none"; msgBox.innerText = "¡Recolecta esperanza!"; progressText.innerText = "0%";
+            }
+            loop();
+        </script>
+        <div class="games-container">
+
+            <article class="game-card">
+                <div class="game-info">
+                    <div>
+                        <h3>🧩 Sopa de Letras</h3>
+                        <p>Encuentra palabras de resiliencia y bienestar.</p>
+                    </div>
+                </div>
+                <div class="iframe-wrapper">
+                    <iframe src="https://es.educaplay.com/juego/27370969-word_search_recursos_de_resiliencia.html"
+                        allowfullscreen></iframe>
+                </div>
+            </article>
+
+            <article class="game-card">
+                <div class="game-info">
+                    <div>
+                        <h3>🧠 Crucigrama Sanador</h3>
+                        <p>Conceptos clave para el cuidado de tu mente.</p>
+                    </div>
+                </div>
+                <div class="iframe-wrapper">
+                    <iframe src="https://es.educaplay.com/juego/27371075-conceptos_sanadores_crucigrama.html"
+                        allowfullscreen></iframe>
+                </div>
+            </article>
+
+            <article class="game-card">
+                <div class="game-info">
+                    <div>
+                        <h3>⭐ Mitos y Verdades</h3>
+                        <p>Despeja dudas sobre la ansiedad y depresión.</p>
+                    </div>
+                </div>
+                <div class="iframe-wrapper">
+                    <iframe src="https://es.educaplay.com/juego/27371157-mitos_y_verdades_sobre_la_viol.html"
+                        allowfullscreen></iframe>
+                </div>
+            </article>
+
+        </div>
+
+        <section
+            style="text-align: center; margin-bottom: 3rem; background-color: #ebf5fb; padding: 30px; border-radius: 15px;">
+            <p>¿Te interesa participar en nuestros talleres presenciales de arte o deporte?</p>
+            <a href="contacto.html"
+                style="display: inline-block; margin-top: 15px; background-color: #1abc9c; color: white; padding: 12px 25px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 10px rgba(26, 188, 156, 0.3);">Contáctanos
+                para más info</a>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Proyecto de Apoyo Estudiantil. Todos los derechos reservados.</p>
+        <p>Institución Educativa Fiscal - Dolores Sucre</p>
+    </footer>
+
+    <script>
+        const hamburger = document.querySelector(".hamburger");
+        const navMenu = document.querySelector(".nav-menu");
+
+        hamburger.addEventListener("click", () => {
+            hamburger.classList.toggle("active");
+            navMenu.classList.toggle("active");
+        });
+
+        document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
+            hamburger.classList.remove("active");
+            navMenu.classList.remove("active");
+        }));
+    </script>
+</body>
+
+</html>
