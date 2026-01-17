@@ -5,13 +5,46 @@ const cors = require('cors');
 const app = express();
 
 // --- CONFIGURACIÓN DE PUERTO PARA RENDER ---
+// Asegúrate de usar process.env.PORT
 const port = process.env.PORT || 3000;
+
+app.listen(port, () => {
+    console.log(`Servidor escuchando en el puerto ${port}`);
+});
 
 // --- CONFIGURACIÓN DE CONEXIÓN DINÁMICA ---
 // Usará tu PC local si no hay URL de nube, o Render si ya está publicado
+// ... (Tus otros requires arriba)
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+    ssl: { rejectUnauthorized: false }
+});
+
+// --- FUNCIÓN AUTOMÁTICA PARA CREAR LA TABLA (GRATIS) ---
+const inicializarBaseDeDatos = async () => {
+    const queryTabla = `
+        CREATE TABLE IF NOT EXISTS comentarios (
+            id SERIAL PRIMARY KEY,
+            lectura_id VARCHAR(50) NOT NULL,
+            nombre VARCHAR(100) NOT NULL,
+            contenido TEXT NOT NULL,
+            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    `;
+    try {
+        await pool.query(queryTabla);
+        console.log("✅ Tabla 'comentarios' lista (verificada o creada)");
+    } catch (err) {
+        console.error("❌ Error al crear la tabla:", err);
+    }
+};
+
+// Llamamos a la función antes de que el servidor empiece a escuchar
+inicializarBaseDeDatos().then(() => {
+    app.listen(port, () => {
+        console.log(`🚀 Servidor funcionando en puerto ${port}`);
+    });
 });
 
 app.use(cors());
@@ -95,3 +128,4 @@ app.get('/admin/todo', async (req, res) => {
 app.listen(port, () => {
     console.log(`Servidor en puerto ${port}`);
 });
+
