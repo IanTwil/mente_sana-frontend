@@ -399,14 +399,15 @@
             margin-top: auto;
         }
 
-        /* --- CONTROLES MÓVILES --- */
         #mobile-controls {
             display: none;
             margin-top: 20px;
             justify-content: center;
-            gap: 30px;
+            gap: 15px;
+            flex-wrap: wrap;
             align-items: center;
             touch-action: none;
+            padding: 10px;
         }
 
         @media (max-width: 1024px) {
@@ -416,20 +417,26 @@
         }
 
         .control-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.5);
+            background: rgba(44, 62, 80, 0.8);
+            border: 2px solid #1abc9c;
             color: white;
-            width: 70px;
-            height: 70px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            font-size: 2rem;
+            font-size: 1.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             user-select: none;
-            -webkit-user-select: none;
-            transition: transform 0.1s, background 0.2s;
+        }
+
+        .jump-btn {
+            width: 75px;
+            height: 75px;
+            background: #f1c40f;
+            color: #2c3e50;
+            font-weight: bold;
         }
 
         .control-btn:active,
@@ -437,13 +444,6 @@
             background: rgba(26, 188, 156, 0.6);
             transform: scale(0.95);
             border-color: #1abc9c;
-        }
-
-        .jump-btn {
-            width: 90px;
-            height: 90px;
-            border-color: #f1c40f;
-            background: rgba(241, 196, 15, 0.2);
         }
 
         .jump-btn:active,
@@ -588,23 +588,23 @@
                                 Jugar de nuevo
                             </button>
                         </div>
-                        
+
                         <div id="fullscreen-btn" onclick="toggleFullScreen()"
                             style="position: absolute; bottom: 15px; right: 15px; pointer-events: auto; background: rgba(0,0,0,0.5); color: white; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 0.7rem; border: 1px solid #555;">
                             ⛶ FULLSCREEN</div>
                     </div>
                     <div id="mobile-controls"
-                            style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 50; pointer-events: auto;">
-                            <div class="control-btn" id="btn-left"
-                                style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 50%; font-size: 1.5rem; user-select: none;">
-                                ⬅️</div>
-                            <div class="control-btn jump-btn" id="btn-jump"
-                                style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 50%; font-size: 1.5rem; user-select: none;">
-                                🦘</div>
-                            <div class="control-btn" id="btn-right"
-                                style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 50%; font-size: 1.5rem; user-select: none;">
-                                ➡️</div>
-                        </div>
+                        style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 50; pointer-events: auto;">
+                        <div class="control-btn" id="btn-left"
+                            style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 50%; font-size: 1.5rem; user-select: none;">
+                            ⬅️</div>
+                        <div class="control-btn jump-btn" id="btn-jump"
+                            style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 50%; font-size: 1.5rem; user-select: none;">
+                            🦘</div>
+                        <div class="control-btn" id="btn-right"
+                            style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 50%; font-size: 1.5rem; user-select: none;">
+                            ➡️</div>
+                    </div>
                 </div>
 
                 <div
