@@ -767,6 +767,8 @@
     </footer>
 
     <script>
+        // Sustituye esta URL por la de tu BACKEND en Render
+        const API_URL = "https://mente-sana-frontend.onrender.com";
         const hamburger = document.querySelector(".hamburger");
         const navMenu = document.querySelector(".nav-menu");
 
@@ -938,7 +940,6 @@
                 closeModal();
             }
         }
-
         async function saveComment(lecturaId) {
             const nameInput = document.getElementById('userName');
             const commentInput = document.getElementById('userComment');
@@ -958,8 +959,8 @@
             };
 
             try {
-                // ACTUALIZACIÓN DE URL A RENDER
-                const response = await fetch('https://mente-sana-frontend.onrender.com/comentarios', {
+                // Usamos la variable API_URL
+                const response = await fetch(`${API_URL}/comentarios`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(nuevoComentario)
@@ -973,10 +974,9 @@
                     const errorData = await response.json();
                     alert(errorData.error || "Hubo un error al guardar el comentario.");
                 }
-
             } catch (error) {
                 console.error("Error de conexión:", error);
-                alert("No se pudo conectar con el servidor.");
+                alert("No se pudo conectar con el servidor de base de datos.");
             }
         }
 
@@ -984,8 +984,8 @@
             const list = document.getElementById('commentsList');
 
             try {
-                // ACTUALIZACIÓN DE URL A RENDER
-                const response = await fetch(`https://mente-sana-frontend.onrender.com/comentarios/${lecturaId}`);
+                // Usamos la variable API_URL
+                const response = await fetch(`${API_URL}/comentarios/${lecturaId}`);
                 const comentarios = await response.json();
 
                 if (comentarios.length === 0) {
@@ -1004,7 +1004,8 @@
         `).join('');
 
             } catch (error) {
-                list.innerHTML = '<p style="color: #e74c3c;">Error al cargar comentarios.</p>';
+                console.error("Error al cargar:", error);
+                list.innerHTML = '<p style="color: #e74c3c;">Error al conectar con la base de datos.</p>';
             }
         }
     </script>
