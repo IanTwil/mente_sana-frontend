@@ -45,10 +45,26 @@
     <div id="adminList">Cargando comentarios para moderar...</div>
 
     <script>
-        async function loadAll() {
-            // URL actualizada a Render para obtener todos los comentarios
-            const res = await fetch('https://mente-sana-frontend.onrender.com/admin/todo');
+    // 1. CAMBIO IMPORTANTE: Usa la URL de tu BACKEND (el de Node.js)
+    const API_URL = "https://mente-sana-frontend.onrender.com"; 
+
+    async function loadAll() {
+        const listContainer = document.getElementById('adminList');
+        listContainer.innerHTML = "<p>Cargando datos del servidor...</p>";
+
+        try {
+            // Usamos la variable API_URL y apuntamos al backend
+            const res = await fetch(`${API_URL}/admin/todo`);
+            
+            if (!res.ok) throw new Error("Error al obtener datos");
+            
             const data = await res.json();
+            
+            if (data.length === 0) {
+                listContainer.innerHTML = "<p>No hay comentarios en la base de datos.</p>";
+                return;
+            }
+
             let html = '<table><tr><th>ID</th><th>Lectura</th><th>Autor</th><th>Comentario</th><th>Acción</th></tr>';
             data.forEach(c => {
                 html += `<tr>
@@ -59,39 +75,45 @@
                     <td><button class="btn-delete" onclick="deleteComm(${c.id})">Eliminar</button></td>
                 </tr>`;
             });
-            document.getElementById('adminList').innerHTML = html + '</table>';
+            listContainer.innerHTML = html + '</table>';
+
+        } catch (error) {
+            console.error("Error:", error);
+            listContainer.innerHTML = `<p style="color:red;">Error: No se pudo conectar con el servidor. Asegúrate de que el Backend esté encendido.</p>`;
         }
+    }
 
-        async function deleteComm(id) {
-            const password = prompt("Ingrese la clave de administrador para confirmar:");
+    async function deleteComm(id) {
+        const password = prompt("Ingrese la clave de administrador para confirmar:");
+        if (!password) return;
 
-            if (!password) return;
-
-            if (confirm('¿Seguro que quieres borrar este comentario?')) {
-                try {
-                    // URL actualizada a Render para la eliminación por ID
-                    const response = await fetch(`https://mente-sana-frontend.onrender.com/comentarios/${id}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'x-admin-key': password
-                        }
-                    });
-
-                    if (response.ok) {
-                        alert("Comentario eliminado con éxito.");
-                        loadAll();
-                    } else {
-                        const mensaje = await response.text();
-                        alert("Error: " + mensaje);
+        if (confirm('¿Seguro que quieres borrar este comentario?')) {
+            try {
+                // Usamos la variable API_URL aquí también
+                const response = await fetch(`${API_URL}/comentarios/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'x-admin-key': password
                     }
-                } catch (error) {
-                    console.error("Error:", error);
-                    alert("No se pudo conectar con el servidor.");
+                });
+
+                if (response.ok) {
+                    alert("Comentario eliminado con éxito.");
+                    loadAll();
+                } else {
+                    const mensaje = await response.text();
+                    alert("Error: " + mensaje);
                 }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("No se pudo conectar con el servidor.");
             }
         }
-        loadAll();
-    </script>
+    }
+
+    // Ejecutar al cargar la página
+    loadAll();
+</script>
 </body>
 
 </html>
