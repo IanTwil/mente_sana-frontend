@@ -263,57 +263,71 @@
             transform: scale(1.02);
         }
 
-        /* --- SECCIÓN DE COMENTARIOS --- */
+        /* --- SECCIÓN DE COMENTARIOS :P--- */
         .comments-section {
-            background: #fff;
+            background: #ffffff;
             padding: 2.5rem;
             border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
             animation: fadeInUp 1s ease forwards 0.8s;
             opacity: 0;
         }
 
         .comment-item {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 12px;
-            margin-top: 15px;
-            border-left: 5px solid #1abc9c;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 1px solid #f0f0f0;
             position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .comment-item:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-color: #1abc9c55;
         }
 
         .comment-item strong {
             color: #2c3e50;
-            display: block;
-            font-size: 1.05rem;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .comment-item strong::before {
+            content: "👤";
+            font-size: 0.8rem;
+            background: #f0f2f5;
+            padding: 6px;
+            border-radius: 50%;
         }
 
         .comment-item small {
-            color: #999;
-            font-size: 0.85rem;
+            color: #a0aec0;
+            font-size: 0.82rem;
+            display: block;
+            margin: 4px 0 12px 42px;
         }
 
         .comment-item p {
-            margin-top: 5px;
-            color: #444;
+            margin-left: 42px;
+            color: #4a5568;
+            line-height: 1.6;
+            font-size: 1rem;
         }
 
-        /* --- NUEVOS ESTILOS PARA RESPUESTAS (Manteniendo armonía) --- */
 
-        /* Contenedor de las respuestas (indentado) */
         .replies-container {
             margin-left: 30px;
-            /* Sangría a la izquierda */
             border-left: 2px solid #e0e0e0;
-            /* Línea guía */
             padding-left: 15px;
             margin-top: 10px;
         }
 
-        /* Estilo de la tarjeta de respuesta */
         .reply-item {
             background: #ffffff;
-            /* Blanco para distinguir del padre gris */
             border: 1px solid #eee;
             padding: 10px 15px;
             border-radius: 10px;
@@ -327,23 +341,34 @@
             margin-right: 5px;
         }
 
-        /* Botón de Responder */
         .btn-reply {
-            background: none;
-            border: none;
-            color: #1abc9c;
-            font-weight: bold;
-            font-size: 0.9rem;
+            margin-left: 42px;
+            margin-top: 15px;
+            background: #fff5f5;
+            color: #e53e3e !important;
+            border: 1px solid #feb2b2;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
             cursor: pointer;
-            margin-top: 8px;
-            text-decoration: underline;
+            transition: 0.2s;
         }
 
         .btn-reply:hover {
-            color: #16a085;
+            background: #feb2b2;
+            color: white !important;
         }
 
-        /* Formulario de respuesta (oculto) */
+        .comentario-oficial {
+            border-left: 5px solid #1abc9c !important;
+            background-color: #f0fff4 !important;
+        }
+
+        .comentario-oficial strong::before {
+            content: "🛡️";
+            background: #c6f6d5;
+        }
+
         .reply-form {
             display: none;
             margin-top: 10px;
@@ -399,15 +424,6 @@
             filter: drop-shadow(0 0 5px rgba(231, 76, 60, 0.5));
         }
 
-
-        .comentario-oficial {
-            border-left: 5px solid #1abc9c !important;
-
-            background-color: #f0fff4 !important;
-
-            box-shadow: 0 4px 15px rgba(26, 188, 156, 0.2);
-
-        }
 
         .contacto-privado {
             background: #ffffff;
@@ -526,103 +542,103 @@
     </footer>
 
     <script>
-    // URL de tu servidor en Render (Asegúrate de que sea esta)
-    const API_URL = 'https://mente-sana-frontend.onrender.com';
 
-    // Detectar si estamos en modo administrador mediante la URL
-    const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'mente123';
-    
-    // --- MENÚ HAMBURGUESA ---
-    const hamburger = document.querySelector(".hamburger");
-    const navMenu = document.querySelector(".nav-menu");
-    hamburger.addEventListener("click", () => {
-        hamburger.classList.toggle("active");
-        navMenu.classList.toggle("active");
-    });
+        const API_URL = 'https://mente-sana-frontend.onrender.com';
 
-    const contactForm = document.getElementById('contactForm');
-    const commentsContainer = document.getElementById('commentsContainer');
 
-    // Cargar al iniciar
-    document.addEventListener('DOMContentLoaded', loadCommentsFromDB);
+        const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'mente123';
 
-    // --- GUARDAR COMENTARIO PRINCIPAL ---
-    contactForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = document.querySelector('.btn-submit');
-        const nameInput = document.getElementById('name');
-        const name = isAdmin ? "✅ Verificador MenteSana" : (nameInput.value || "Visitante");
-        const text = document.getElementById('comment').value;
+        // --- MENÚ HAMBURGUESA ---
+        const hamburger = document.querySelector(".hamburger");
+        const navMenu = document.querySelector(".nav-menu");
+        hamburger.addEventListener("click", () => {
+            hamburger.classList.toggle("active");
+            navMenu.classList.toggle("active");
+        });
 
-        btn.textContent = "Publicando...";
-        btn.disabled = true;
+        const contactForm = document.getElementById('contactForm');
+        const commentsContainer = document.getElementById('commentsContainer');
 
-        try {
-            const response = await fetch(`${API_URL}/comentarios`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    lectura_id: 'contacto', // Usamos 'contacto' como ID general
-                    nombre: name, 
-                    contenido: text 
-                })
-            });
 
-            if (response.ok) {
-                contactForm.reset();
-                await loadCommentsFromDB();
-            } else {
-                const errorData = await response.json();
-                alert(errorData.error || "Error al publicar.");
+        document.addEventListener('DOMContentLoaded', loadCommentsFromDB);
+
+
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.querySelector('.btn-submit');
+            const nameInput = document.getElementById('name');
+            const name = isAdmin ? "✅ Verificador MenteSana" : (nameInput.value || "Visitante");
+            const text = document.getElementById('comment').value;
+
+            btn.textContent = "Publicando...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/comentarios`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        lectura_id: 'contacto',
+                        nombre: name,
+                        contenido: text
+                    })
+                });
+
+                if (response.ok) {
+                    contactForm.reset();
+                    await loadCommentsFromDB();
+                } else {
+                    const errorData = await response.json();
+                    alert(errorData.error || "Error al publicar.");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("No se pudo conectar con el servidor.");
+            } finally {
+                btn.textContent = "Publicar Comentario";
+                btn.disabled = false;
             }
-        } catch (error) {
-            console.error("Error:", error);
-            alert("No se pudo conectar con el servidor.");
-        } finally {
-            btn.textContent = "Publicar Comentario";
-            btn.disabled = false;
-        }
-    });
+        });
 
-    // --- CARGAR COMENTARIOS ---
-    async function loadCommentsFromDB() {
-        try {
-            const response = await fetch(`${API_URL}/comentarios/contacto`);
-            const allComments = await response.json();
 
-            commentsContainer.innerHTML = '';
+        async function loadCommentsFromDB() {
+            try {
+                const response = await fetch(`${API_URL}/comentarios/contacto`);
+                const allComments = await response.json();
 
-            if (allComments.length === 0) {
-                commentsContainer.innerHTML = '<p style="text-align:center; color:#999;">Sé el primero en escribir algo...</p>';
-                return;
+                commentsContainer.innerHTML = '';
+
+                if (allComments.length === 0) {
+                    commentsContainer.innerHTML = '<p style="text-align:center; color:#999;">Sé el primero en escribir algo...</p>';
+                    return;
+                }
+
+                allComments.forEach(comment => {
+                    renderThread(comment);
+                });
+
+            } catch (error) {
+                console.error("Error cargando comentarios:", error);
+                commentsContainer.innerHTML = '<p style="text-align:center; color:red;">Error al conectar con el servidor.</p>';
             }
-
-            allComments.forEach(comment => {
-                renderThread(comment);
-            });
-
-        } catch (error) {
-            console.error("Error cargando comentarios:", error);
-            commentsContainer.innerHTML = '<p style="text-align:center; color:red;">Error al conectar con el servidor.</p>';
-        }
-    }
-
-    function renderThread(comment) {
-        const dateStr = new Date(comment.fecha).toLocaleString();
-
-        const estiloNombre = (nombre) => {
-            if (nombre.includes("Verificador")) {
-                return `<span style="color: #1abc9c; font-weight: bold;">${nombre} <span style="font-size: 0.65rem; background: #1abc9c; color: white; padding: 1px 5px; border-radius: 4px; margin-left: 5px; vertical-align: middle;">OFICIAL</span></span>`;
-            }
-            return nombre;
-        };
-
-        const threadDiv = document.createElement('div');
-        if (comment.nombre.includes("Verificador")) {
-            threadDiv.className = 'comentario-oficial';
         }
 
-        threadDiv.innerHTML = `
+        function renderThread(comment) {
+            const dateStr = new Date(comment.fecha).toLocaleString();
+
+            const estiloNombre = (nombre) => {
+                if (nombre.includes("Verificador")) {
+                    return `<span style="color: #1abc9c; font-weight: bold;">${nombre} <span style="font-size: 0.65rem; background: #1abc9c; color: white; padding: 1px 5px; border-radius: 4px; margin-left: 5px; vertical-align: middle;">OFICIAL</span></span>`;
+                }
+                return nombre;
+            };
+
+            const threadDiv = document.createElement('div');
+            if (comment.nombre.includes("Verificador")) {
+                threadDiv.className = 'comentario-oficial';
+            }
+
+            threadDiv.innerHTML = `
             <div class="comment-item" style="border-bottom: 1px solid #eee; padding: 15px 0;"> 
                 <strong>${estiloNombre(comment.nombre)}</strong>
                 <small style="color: #999; margin-left: 10px;">${dateStr}</small>
@@ -631,50 +647,50 @@
                 ${isAdmin ? `<button class="btn-reply" style="color: #e74c3c; cursor: pointer; background: none; border: none; text-decoration: underline;" onclick="deleteComment(${comment.id})">🗑 Eliminar</button>` : ''}
             </div>
         `;
-        commentsContainer.appendChild(threadDiv);
-    }
-
-    // --- ELIMINAR COMENTARIO (ADMIN) ---
-    async function deleteComment(id) {
-        const password = prompt("Ingresa la clave de seguridad para eliminar:");
-        if (password !== "DoloresSucre2024") { // Usando tu clave secreta de server.js
-            alert("Clave incorrecta.");
-            return;
+            commentsContainer.appendChild(threadDiv);
         }
 
-        if (!confirm("¿Confirmas que deseas eliminar este mensaje?")) return;
 
-        try {
-            const response = await fetch(`${API_URL}/comentarios/${id}`, {
-                method: 'DELETE',
-                headers: { 'x-admin-key': 'DoloresSucre2024' }
-            });
-
-            if (response.ok) {
-                await loadCommentsFromDB();
-            } else {
-                alert("Error al eliminar.");
+        async function deleteComment(id) {
+            const password = prompt("Ingresa la clave de seguridad para eliminar:");
+            if (password !== "DoloresSucre2024") {
+                alert("Clave incorrecta.");
+                return;
             }
-        } catch (error) {
-            console.error("Error:", error);
+
+            if (!confirm("¿Confirmas que deseas eliminar este mensaje?")) return;
+
+            try {
+                const response = await fetch(`${API_URL}/comentarios/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'x-admin-key': 'DoloresSucre2024' }
+                });
+
+                if (response.ok) {
+                    await loadCommentsFromDB();
+                } else {
+                    alert("Error al eliminar.");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+            }
         }
-    }
 
-    window.deleteComment = deleteComment;
+        window.deleteComment = deleteComment;
 
-    // --- BARRA DE PROGRESO ---
-    window.onscroll = function () {
-        const barra = document.getElementById("progreso-barra");
-        const alturaPagina = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-        const progreso = (window.scrollY / alturaPagina) * 100;
-        if (barra) barra.style.width = progreso + "%";
-    };
+        // --- BARRA DE PROGRESO ---
+        window.onscroll = function () {
+            const barra = document.getElementById("progreso-barra");
+            const alturaPagina = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const progreso = (window.scrollY / alturaPagina) * 100;
+            if (barra) barra.style.width = progreso + "%";
+        };
 
-    if (isAdmin) {
-        const campoNombre = document.querySelector('.form-group:has(#name)');
-        if (campoNombre) campoNombre.style.display = 'none';
-    }
-</script>
+        if (isAdmin) {
+            const campoNombre = document.querySelector('.form-group:has(#name)');
+            if (campoNombre) campoNombre.style.display = 'none';
+        }
+    </script>
 </body>
 
 </html>
