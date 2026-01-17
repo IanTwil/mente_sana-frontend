@@ -817,12 +817,16 @@
         </script>
         <div class="games-container">
 
-            <article class="game-card">
+            <article class="game-card" id="juego1">
                 <div class="game-info">
                     <div>
                         <h3>🧩 Sopa de Letras</h3>
                         <p>Encuentra palabras de resiliencia y bienestar.</p>
                     </div>
+                    <button onclick="expandirJuego('juego1')"
+                        style="background: #1abc9c; border: none; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                        Full Screen ⛶
+                    </button>
                 </div>
                 <div class="iframe-wrapper">
                     <iframe src="https://es.educaplay.com/juego/27370969-word_search_recursos_de_resiliencia.html"
@@ -830,12 +834,16 @@
                 </div>
             </article>
 
-            <article class="game-card">
+            <article class="game-card" id="juego2">
                 <div class="game-info">
                     <div>
                         <h3>🧠 Crucigrama Sanador</h3>
                         <p>Conceptos clave para el cuidado de tu mente.</p>
                     </div>
+                    <button onclick="expandirJuego('juego2')"
+                        style="background: #1abc9c; border: none; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                        Full Screen ⛶
+                    </button>
                 </div>
                 <div class="iframe-wrapper">
                     <iframe src="https://es.educaplay.com/juego/27371075-conceptos_sanadores_crucigrama.html"
@@ -843,12 +851,16 @@
                 </div>
             </article>
 
-            <article class="game-card">
+            <article class="game-card" id="juego3">
                 <div class="game-info">
                     <div>
-                        <h3>⭐ Mitos y Verdades</h3>
-                        <p>Despeja dudas sobre la ansiedad y depresión.</p>
+                        <h3>Mitos y Verdades</h3>
+                        <p>Desafía lo que crees saber sobre la violencia.</p>
                     </div>
+                    <button onclick="expandirJuego('juego3')"
+                        style="background: #1abc9c; border: none; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                        Full Screen ⛶
+                    </button>
                 </div>
                 <div class="iframe-wrapper">
                     <iframe src="https://es.educaplay.com/juego/27371157-mitos_y_verdades_sobre_la_viol.html"
@@ -885,6 +897,17 @@
             hamburger.classList.remove("active");
             navMenu.classList.remove("active");
         }));
+
+        function expandirJuego(id) {
+            const juego = document.getElementById(id);
+            if (juego.requestFullscreen) {
+                juego.requestFullscreen();
+            } else if (juego.webkitRequestFullscreen) { /* Safari */
+                juego.webkitRequestFullscreen();
+            } else if (juego.msRequestFullscreen) { /* IE11 */
+                juego.msRequestFullscreen();
+            }
+        }
     </script>
 </body>
 
