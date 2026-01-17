@@ -613,6 +613,15 @@
             transform: translateY(-10px) !important;
             box-shadow: 0 15px 35px rgba(26, 188, 156, 0.2);
         }
+
+        .article-card {
+            contain: layout;
+            will-change: transform, opacity;
+        }
+
+        #canvas-particles {
+            pointer-events: none;
+        }
     </style>
 </head>
 
@@ -1058,34 +1067,37 @@
             }
         }
 
-        // Crear el grupo de partículas
+        // 1. Reducimos la cantidad de partículas (dividiendo por un número mayor)
         function init() {
             particlesArray = [];
-            let numberOfParticles = (canvas.height * canvas.width) / 9000; // Densidad de partículas
+            // Antes dividíamos por 9000, ahora por 15000 (menos partículas = más velocidad)
+            let numberOfParticles = (canvas.height * canvas.width) / 15000;
 
             for (let i = 0; i < numberOfParticles; i++) {
-                let size = (Math.random() * 3) + 1; // Tamaño aleatorio
-                let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
-                let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
-                let directionX = (Math.random() * 2) - 1; // Velocidad X
-                let directionY = (Math.random() * 2) - 1; // Velocidad Y
+                let size = (Math.random() * 2) + 1; // Partículas un poco más pequeñas
+                let x = Math.random() * innerWidth;
+                let y = Math.random() * innerHeight;
+                let directionX = (Math.random() * 1) - 0.5; // Movimiento más lento y suave
+                let directionY = (Math.random() * 1) - 0.5;
                 let color = '#1abc9c';
 
                 particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
             }
         }
 
-        // Animación de líneas conectoras (Efecto Neuronas)
+        // 2. Optimizamos la conexión (solo dibujar si están muy cerca)
         function connect() {
-            let opacityValue = 1;
             for (let a = 0; a < particlesArray.length; a++) {
                 for (let b = a; b < particlesArray.length; b++) {
-                    let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x))
-                        + ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
+                    let dx = particlesArray[a].x - particlesArray[b].x;
+                    let dy = particlesArray[a].y - particlesArray[b].y;
+                    let distance = dx * dx + dy * dy; // Usamos distancia al cuadrado (es más rápido que Math.sqrt)
 
-                    if (distance < (canvas.width / 7) * (canvas.height / 7)) {
-                        opacityValue = 1 - (distance / 20000);
-                        ctx.strokeStyle = 'rgba(26, 188, 156,' + opacityValue + ')'; // Color de línea
+                    // Solo conectamos si la distancia es pequeña
+                    let maxDistance = (canvas.width / 10) * (canvas.height / 10);
+                    if (distance < maxDistance) {
+                        let opacity = 1 - (distance / maxDistance);
+                        ctx.strokeStyle = `rgba(26, 188, 156, ${opacity * 0.2})`; // Líneas más tenues
                         ctx.lineWidth = 1;
                         ctx.beginPath();
                         ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
@@ -1126,7 +1138,7 @@
 
         document.addEventListener('DOMContentLoaded', function () {
             const observerOptions = {
-                threshold: 0.15 
+                threshold: 0.15
             };
 
             const observer = new IntersectionObserver((entries, observer) => {
