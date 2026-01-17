@@ -263,7 +263,7 @@
             transform: scale(1.02);
         }
 
-        /* --- SECCIÓN DE COMENTARIOS :P--- */
+        /* --- SECCIÓN DE COMENTARIOS MEJORADA --- */
         .comments-section {
             background: #ffffff;
             padding: 2.5rem;
@@ -279,13 +279,12 @@
             border-radius: 15px;
             margin-top: 20px;
             border: 1px solid #f0f0f0;
-            position: relative;
             transition: all 0.3s ease;
         }
 
-        .comment-item:hover {
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            border-color: #1abc9c55;
+        .comentario-oficial {
+            border-left: 5px solid #1abc9c !important;
+            background-color: #f0fff4 !important;
         }
 
         .comment-item strong {
@@ -304,26 +303,45 @@
             border-radius: 50%;
         }
 
+        .comentario-oficial strong::before {
+            content: "🛡️";
+            background: #c6f6d5;
+        }
+
         .comment-item small {
             color: #a0aec0;
-            font-size: 0.82rem;
             display: block;
-            margin: 4px 0 12px 42px;
+            margin: 4px 0 10px 42px;
         }
 
         .comment-item p {
             margin-left: 42px;
             color: #4a5568;
             line-height: 1.6;
-            font-size: 1rem;
         }
 
-
+        /* --- DISEÑO DE RESPUESTAS --- */
         .replies-container {
-            margin-left: 30px;
-            border-left: 2px solid #e0e0e0;
-            padding-left: 15px;
+            margin-left: 42px;
+            border-left: 2px solid #edf2f7;
+            padding-left: 20px;
             margin-top: 10px;
+        }
+
+        .btn-action {
+            margin-left: 42px;
+            margin-top: 10px;
+            background: none;
+            border: none;
+            color: #1abc9c;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .btn-delete {
+            color: #e74c3c;
+            margin-left: 15px;
         }
 
         .reply-item {
@@ -357,16 +375,6 @@
         .btn-reply:hover {
             background: #feb2b2;
             color: white !important;
-        }
-
-        .comentario-oficial {
-            border-left: 5px solid #1abc9c !important;
-            background-color: #f0fff4 !important;
-        }
-
-        .comentario-oficial strong::before {
-            content: "🛡️";
-            background: #c6f6d5;
         }
 
         .reply-form {
@@ -626,28 +634,38 @@
         function renderThread(comment) {
             const dateStr = new Date(comment.fecha).toLocaleString();
 
-            const estiloNombre = (nombre) => {
-                if (nombre.includes("Verificador")) {
-                    return `<span style="color: #1abc9c; font-weight: bold;">${nombre} <span style="font-size: 0.65rem; background: #1abc9c; color: white; padding: 1px 5px; border-radius: 4px; margin-left: 5px; vertical-align: middle;">OFICIAL</span></span>`;
-                }
-                return nombre;
-            };
+            // Lógica de nombre para Admin o Usuario
+            const esAdmin = comment.nombre.includes("Verificador");
+
+            const nombreHTML = esAdmin
+                ? `<span style="color: #16a085; font-weight: bold;">${comment.nombre} 
+           <span style="font-size: 0.65rem; background: #1abc9c; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px;">EQUIPO</span></span>`
+                : `<span>${comment.nombre}</span>`;
 
             const threadDiv = document.createElement('div');
-            if (comment.nombre.includes("Verificador")) {
-                threadDiv.className = 'comentario-oficial';
-            }
+            threadDiv.className = esAdmin ? 'comment-item comentario-oficial' : 'comment-item';
 
             threadDiv.innerHTML = `
-            <div class="comment-item" style="border-bottom: 1px solid #eee; padding: 15px 0;"> 
-                <strong>${estiloNombre(comment.nombre)}</strong>
-                <small style="color: #999; margin-left: 10px;">${dateStr}</small>
-                <p style="margin-top: 10px;">${comment.contenido}</p>
-                
-                ${isAdmin ? `<button class="btn-reply" style="color: #e74c3c; cursor: pointer; background: none; border: none; text-decoration: underline;" onclick="deleteComment(${comment.id})">🗑 Eliminar</button>` : ''}
-            </div>
-        `;
+        <strong>${nombreHTML}</strong>
+        <small>${dateStr}</small>
+        <p>${comment.contenido}</p>
+        
+        <div class="actions">
+            <button class="btn-action" onclick="prepareReply('${comment.nombre}')">💬 Responder</button>
+            ${isAdmin ? `<button class="btn-action btn-delete" onclick="deleteComment(${comment.id})">🗑 Eliminar</button>` : ''}
+        </div>
+    `;
+
             commentsContainer.appendChild(threadDiv);
+        }
+
+        // Función para facilitar la respuesta mencionando al usuario
+        function prepareReply(user) {
+            const textarea = document.getElementById('comment');
+            textarea.value = `@${user} `;
+            textarea.focus();
+            // Scroll suave hacia el formulario
+            document.querySelector('.contact-container').scrollIntoView({ behavior: 'smooth' });
         }
 
 
