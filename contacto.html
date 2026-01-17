@@ -464,7 +464,7 @@
     <div id="progreso-barra"></div>
     <header>
         <nav class="navbar">
-            <a href="index.html" class="logo">Mente<span>Sana</span></a>
+            <a href="inicio.html" class="logo">Mente<span>Sana</span></a>
             <ul class="nav-menu">
                 <li class="nav-item"><a href="inicio.html" class="nav-link">Inicio</a></li>
                 <li class="nav-item"><a href="causas.html" class="nav-link">Causas</a></li>
@@ -526,275 +526,155 @@
     </footer>
 
     <script>
-        // Detectar si estamos en modo administrador mediante la URL
-        const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'mente123';
-        // --- MENÚ HAMBURGUESA ---
-        const hamburger = document.querySelector(".hamburger");
-        const navMenu = document.querySelector(".nav-menu");
-        hamburger.addEventListener("click", () => {
-            hamburger.classList.toggle("active");
-            navMenu.classList.toggle("active");
-        });
+    // URL de tu servidor en Render (Asegúrate de que sea esta)
+    const API_URL = 'https://mente-sana-frontend.onrender.com';
 
+    // Detectar si estamos en modo administrador mediante la URL
+    const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'mente123';
+    
+    // --- MENÚ HAMBURGUESA ---
+    const hamburger = document.querySelector(".hamburger");
+    const navMenu = document.querySelector(".nav-menu");
+    hamburger.addEventListener("click", () => {
+        hamburger.classList.toggle("active");
+        navMenu.classList.toggle("active");
+    });
 
-        const contactForm = document.getElementById('contactForm');
-        const commentsContainer = document.getElementById('commentsContainer');
+    const contactForm = document.getElementById('contactForm');
+    const commentsContainer = document.getElementById('commentsContainer');
 
-        // Cargar al iniciar
-        document.addEventListener('DOMContentLoaded', loadCommentsFromDB);
+    // Cargar al iniciar
+    document.addEventListener('DOMContentLoaded', loadCommentsFromDB);
 
+    // --- GUARDAR COMENTARIO PRINCIPAL ---
+    contactForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.querySelector('.btn-submit');
+        const nameInput = document.getElementById('name');
+        const name = isAdmin ? "✅ Verificador MenteSana" : (nameInput.value || "Visitante");
+        const text = document.getElementById('comment').value;
 
-        contactForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.querySelector('.btn-submit');
+        btn.textContent = "Publicando...";
+        btn.disabled = true;
 
-
-            const nameInput = document.getElementById('name');
-            const name = isAdmin ? "✅ Verificador MenteSana" : (nameInput.value || "Visitante");
-
-            const text = document.getElementById('comment').value;
-
-            btn.textContent = isAdmin ? "Publicando como oficial..." : "Publicando...";
-            btn.disabled = true;
-
-            try {
-                await fetch('/.netlify/functions/guardar_comentario', {
-                    method: 'POST',
-                    body: JSON.stringify({ nombre: name, mensaje: text, parent_id: null })
-                });
-
-                contactForm.reset();
-                await loadCommentsFromDB();
-            } catch (error) {
-                console.error("Error:", error);
-                alert("Hubo un error al guardar tu mensaje.");
-            } finally {
-                btn.textContent = "Publicar Comentario";
-                btn.disabled = false;
-            }
-        });
-
-
-        async function submitReply(parentId) {
-            const textInput = document.getElementById(`reply-text-${parentId}`);
-            const nameInput = document.getElementById(`reply-name-${parentId}`); // Nuevo input para usuarios normales
-            const btn = document.querySelector(`#reply-form-${parentId} .btn-submit`);
-
-            // Lógica de nombre: Si es admin usa el sello oficial, si no usa el nombre que escribió el usuario
-            const nombreFinal = isAdmin ? "✅ Verificador MenteSana" : (nameInput.value || "Visitante");
-
-            if (textInput.value.trim() === "") {
-                alert("Por favor escribe un mensaje.");
-                return;
-            }
-
-            if (!isAdmin && nameInput.value.trim() === "") {
-                alert("Por favor escribe tu nombre.");
-                return;
-            }
-
-            btn.textContent = "Enviando...";
-            btn.disabled = true;
-
-            try {
-                await fetch('/.netlify/functions/guardar_comentario', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        nombre: nombreFinal,
-                        mensaje: textInput.value,
-                        parent_id: parentId
-                    })
-                });
-
-                await loadCommentsFromDB();
-            } catch (error) {
-                console.error("Error:", error);
-                alert("Error al enviar respuesta.");
-            }
-        }
-
-
-        async function loadCommentsFromDB() {
-            try {
-                const response = await fetch('/.netlify/functions/obtener_comentarios');
-                const allComments = await response.json();
-
-                commentsContainer.innerHTML = '';
-
-                if (allComments.length === 0) {
-                    commentsContainer.innerHTML = '<p style="text-align:center; color:#999;">Sé el primero en escribir algo...</p>';
-                    return;
-                }
-
-
-                const mainComments = allComments.filter(c => c.parent_id === null);
-
-                // Recorremos los comentarios principales
-                mainComments.forEach(comment => {
-
-                    const replies = allComments
-                        .filter(r => r.parent_id === comment.id)
-                        .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-
-                    renderThread(comment, replies);
-                });
-
-            } catch (error) {
-                console.error("Error cargando comentarios:", error);
-                commentsContainer.innerHTML = '<p style="text-align:center; color:red;">Error al conectar con el servidor.</p>';
-            }
-        }
-
-        function renderThread(comment, replies) {
-            const misLikes = JSON.parse(localStorage.getItem('mentesana_mis_likes') || '[]');
-            const yaLeDiLike = misLikes.includes(comment.id);
-            const iconoCorazon = yaLeDiLike ? '❤️' : '🤍';
-            const colorCorazon = yaLeDiLike ? '#c0392b' : '#e74c3c';
-
-            const dateStr = new Date(comment.fecha).toLocaleString();
-
-            const estiloNombre = (nombre) => {
-                if (nombre.includes("Verificador")) {
-                    return `<span style="color: #1abc9c; font-weight: bold;">${nombre} <span style="font-size: 0.65rem; background: #1abc9c; color: white; padding: 1px 5px; border-radius: 4px; margin-left: 5px; vertical-align: middle;">OFICIAL</span></span>`;
-                }
-                return nombre;
-            };
-
-            let repliesHTML = '';
-            replies.forEach(reply => {
-                const replyDate = new Date(reply.fecha).toLocaleString();
-                repliesHTML += `
-            <div class="reply-item">
-                <strong>${estiloNombre(reply.nombre)}</strong> <small>(${replyDate})</small>
-                <p>${reply.mensaje}</p>
-                ${isAdmin ? `<button class="btn-reply" style="color: #e74c3c; text-decoration: none;" onclick="deleteComment(${reply.id})">🗑 Eliminar</button>` : ''}
-            </div>
-        `;
+        try {
+            const response = await fetch(`${API_URL}/comentarios`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    lectura_id: 'contacto', // Usamos 'contacto' como ID general
+                    nombre: name, 
+                    contenido: text 
+                })
             });
 
-
-            const threadDiv = document.createElement('div');
-
-            if (comment.nombre.includes("Verificador")) {
-                threadDiv.className = 'comentario-oficial';
+            if (response.ok) {
+                contactForm.reset();
+                await loadCommentsFromDB();
+            } else {
+                const errorData = await response.json();
+                alert(errorData.error || "Error al publicar.");
             }
-            // ---------------------------
-
-            threadDiv.innerHTML = `
-        <div class="comment-item" style="border:none; background:transparent;"> 
-            <strong>${estiloNombre(comment.nombre)}</strong>
-            <small>${dateStr}</small>
-            <p>${comment.mensaje}</p>
-            
-            <button class="btn-reply btn-corazon" 
-                style="text-decoration: none; color: ${colorCorazon}; font-weight: ${yaLeDiLike ? 'bold' : 'normal'};" 
-                onclick="darLike(${comment.id})">
-                ${iconoCorazon} ${comment.likes || 0}
-            </button>
-
-            <button class="btn-reply" onclick="toggleReplyForm(${comment.id})">Responder</button>
-
-            ${isAdmin ? `<button class="btn-reply" style="color: #e74c3c; margin-left: 15px; text-decoration: none;" onclick="deleteComment(${comment.id})">🗑 Eliminar</button>` : ''}
-
-            <div id="reply-form-${comment.id}" class="reply-form">
-                ${isAdmin
-                    ? `<p style="font-size: 0.8rem; color: #1abc9c; margin-bottom: 5px;">Respondiendo como: <b>Portal de Verificación</b></p>`
-                    : `<input type="text" id="reply-name-${comment.id}" placeholder="Tu nombre" style="margin-bottom: 8px; padding: 8px; border: 1px solid #ccc; border-radius: 5px; width: 100%;">`
-                }
-                <textarea id="reply-text-${comment.id}" rows="2" placeholder="${isAdmin ? 'Escribe tu respuesta oficial...' : 'Escribe tu respuesta...'}"></textarea>
-                <button class="btn-submit" style="margin-top: 8px; font-size: 0.9rem; padding: 8px 20px;" onclick="submitReply(${comment.id})">
-                    ${isAdmin ? 'Enviar Respuesta Oficial' : 'Responder'}
-                </button>
-            </div>
-        </div>
-        <div class="replies-container">
-            ${repliesHTML}
-        </div>
-    `;
-            commentsContainer.appendChild(threadDiv);
+        } catch (error) {
+            console.error("Error:", error);
+            alert("No se pudo conectar con el servidor.");
+        } finally {
+            btn.textContent = "Publicar Comentario";
+            btn.disabled = false;
         }
+    });
 
-        function toggleReplyForm(id) {
-            const form = document.getElementById(`reply-form-${id}`);
-            form.classList.toggle('active');
-        }
+    // --- CARGAR COMENTARIOS ---
+    async function loadCommentsFromDB() {
+        try {
+            const response = await fetch(`${API_URL}/comentarios/contacto`);
+            const allComments = await response.json();
 
-        window.toggleReplyForm = toggleReplyForm;
-        window.submitReply = submitReply;
+            commentsContainer.innerHTML = '';
 
-        async function deleteComment(id) {
-            const password = prompt("Ingresa la clave de seguridad para eliminar:");
-
-
-            if (password !== "266596") {
-                alert("Clave incorrecta. No tienes permiso.");
+            if (allComments.length === 0) {
+                commentsContainer.innerHTML = '<p style="text-align:center; color:#999;">Sé el primero en escribir algo...</p>';
                 return;
             }
 
-            if (!confirm("¿Confirmas que deseas eliminar este mensaje permanentemente?")) return;
+            allComments.forEach(comment => {
+                renderThread(comment);
+            });
 
-            try {
-                const response = await fetch(`/.netlify/functions/borrar_comentario?id=${id}`, {
-                    method: 'DELETE'
-                });
-
-                if (response.ok) {
-                    await loadCommentsFromDB();
-                } else {
-                    alert("Error al eliminar del servidor.");
-                }
-            } catch (error) {
-                console.error("Error:", error);
-            }
+        } catch (error) {
+            console.error("Error cargando comentarios:", error);
+            commentsContainer.innerHTML = '<p style="text-align:center; color:red;">Error al conectar con el servidor.</p>';
         }
+    }
 
-        window.deleteComment = deleteComment;
-        async function darLike(id) {
+    function renderThread(comment) {
+        const dateStr = new Date(comment.fecha).toLocaleString();
 
-            let misLikes = JSON.parse(localStorage.getItem('mentesana_mis_likes') || '[]');
-
-            if (misLikes.includes(id)) {
-                alert("Ya le has dado amor a este pensamiento ❤️");
-                return;
+        const estiloNombre = (nombre) => {
+            if (nombre.includes("Verificador")) {
+                return `<span style="color: #1abc9c; font-weight: bold;">${nombre} <span style="font-size: 0.65rem; background: #1abc9c; color: white; padding: 1px 5px; border-radius: 4px; margin-left: 5px; vertical-align: middle;">OFICIAL</span></span>`;
             }
-
-            try {
-
-                const response = await fetch('/.netlify/functions/dar_like', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: id })
-                });
-
-                if (response.ok) {
-
-                    misLikes.push(id);
-                    localStorage.setItem('mentesana_mis_likes', JSON.stringify(misLikes));
-
-
-                    await loadCommentsFromDB();
-                } else {
-                    alert("No pudimos registrar tu like. Intenta de nuevo.");
-                }
-            } catch (error) {
-                console.error("Error en la conexión de likes:", error);
-            }
-        }
-
-        window.darLike = darLike;
-
-        if (isAdmin) {
-            const campoNombre = document.querySelector('.form-group:has(#name)');
-            if (campoNombre) campoNombre.style.display = 'none';
-        }
-
-        window.onscroll = function () {
-            const barra = document.getElementById("progreso-barra");
-            const alturaPagina = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            const progreso = (window.scrollY / alturaPagina) * 100;
-            barra.style.width = progreso + "%";
+            return nombre;
         };
-    </script>
+
+        const threadDiv = document.createElement('div');
+        if (comment.nombre.includes("Verificador")) {
+            threadDiv.className = 'comentario-oficial';
+        }
+
+        threadDiv.innerHTML = `
+            <div class="comment-item" style="border-bottom: 1px solid #eee; padding: 15px 0;"> 
+                <strong>${estiloNombre(comment.nombre)}</strong>
+                <small style="color: #999; margin-left: 10px;">${dateStr}</small>
+                <p style="margin-top: 10px;">${comment.contenido}</p>
+                
+                ${isAdmin ? `<button class="btn-reply" style="color: #e74c3c; cursor: pointer; background: none; border: none; text-decoration: underline;" onclick="deleteComment(${comment.id})">🗑 Eliminar</button>` : ''}
+            </div>
+        `;
+        commentsContainer.appendChild(threadDiv);
+    }
+
+    // --- ELIMINAR COMENTARIO (ADMIN) ---
+    async function deleteComment(id) {
+        const password = prompt("Ingresa la clave de seguridad para eliminar:");
+        if (password !== "DoloresSucre2024") { // Usando tu clave secreta de server.js
+            alert("Clave incorrecta.");
+            return;
+        }
+
+        if (!confirm("¿Confirmas que deseas eliminar este mensaje?")) return;
+
+        try {
+            const response = await fetch(`${API_URL}/comentarios/${id}`, {
+                method: 'DELETE',
+                headers: { 'x-admin-key': 'DoloresSucre2024' }
+            });
+
+            if (response.ok) {
+                await loadCommentsFromDB();
+            } else {
+                alert("Error al eliminar.");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    }
+
+    window.deleteComment = deleteComment;
+
+    // --- BARRA DE PROGRESO ---
+    window.onscroll = function () {
+        const barra = document.getElementById("progreso-barra");
+        const alturaPagina = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const progreso = (window.scrollY / alturaPagina) * 100;
+        if (barra) barra.style.width = progreso + "%";
+    };
+
+    if (isAdmin) {
+        const campoNombre = document.querySelector('.form-group:has(#name)');
+        if (campoNombre) campoNombre.style.display = 'none';
+    }
+</script>
 </body>
 
 </html>
