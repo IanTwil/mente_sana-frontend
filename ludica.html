@@ -398,6 +398,58 @@
             padding: 1.5rem;
             margin-top: auto;
         }
+
+        /* --- CONTROLES MÓVILES --- */
+        #mobile-controls {
+            display: none;
+            margin-top: 20px;
+            justify-content: center;
+            gap: 30px;
+            align-items: center;
+            touch-action: none;
+        }
+
+        @media (max-width: 1024px) {
+            #mobile-controls {
+                display: flex;
+            }
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: transform 0.1s, background 0.2s;
+        }
+
+        .control-btn:active,
+        .control-btn.pressed {
+            background: rgba(26, 188, 156, 0.6);
+            transform: scale(0.95);
+            border-color: #1abc9c;
+        }
+
+        .jump-btn {
+            width: 90px;
+            height: 90px;
+            border-color: #f1c40f;
+            background: rgba(241, 196, 15, 0.2);
+        }
+
+        .jump-btn:active,
+        .jump-btn.pressed {
+            background: rgba(241, 196, 15, 0.6);
+        }
     </style>
 </head>
 
@@ -507,7 +559,11 @@
                             ⛶ FULLSCREEN</div>
                     </div>
                 </div>
-
+                <div id="mobile-controls">
+                    <div class="control-btn" id="btn-left">⬅️</div>
+                    <div class="control-btn jump-btn" id="btn-jump">🦘</div>
+                    <div class="control-btn" id="btn-right">➡️</div>
+                </div>
                 <div
                     style="margin-top: 20px; display: flex; justify-content: center; gap: 15px; align-items: center; flex-wrap: wrap;">
                     <div
@@ -687,6 +743,33 @@
                 portal.active = false; particles = []; fragments.forEach(f => f.gathered = false);
                 winScreen.style.display = "none"; msgBox.innerText = "¡Recolecta esperanza!"; progressText.innerText = "0%";
             }
+            function setupMobileButton(id, keyName) {
+                const btn = document.getElementById(id);
+
+                const press = (e) => {
+                    if (e.cancelable) e.preventDefault(); 
+                    keys[keyName] = true;
+                    btn.classList.add("pressed");
+                };
+
+                const release = (e) => {
+                    if (e.cancelable) e.preventDefault();
+                    keys[keyName] = false;
+                    btn.classList.remove("pressed");
+                };
+
+                btn.addEventListener("touchstart", press, { passive: false });
+                btn.addEventListener("touchend", release);
+
+                btn.addEventListener("mousedown", press);
+                btn.addEventListener("mouseup", release);
+                btn.addEventListener("mouseleave", release);
+            }
+
+            setupMobileButton("btn-left", "ArrowLeft");
+            setupMobileButton("btn-right", "ArrowRight");
+            setupMobileButton("btn-jump", "ArrowUp"); 
+
             loop();
         </script>
         <div class="games-container">

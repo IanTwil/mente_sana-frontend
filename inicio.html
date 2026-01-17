@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Apoyo Emocional | Bachilleres</title>
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <style>
@@ -21,6 +21,9 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            overflow-x: hidden;
+            width: 100%;
+            position: relative;
         }
 
         a {
@@ -450,6 +453,43 @@
             color: #2c3e50;
         }
 
+        /* --- OPTIMIZACIÓN MÓVIL (EVITAR DESPLAZAMIENTO LATERAL) --- */
+        @media (max-width: 768px) {
+            .intro-container {
+                flex-direction: column;
+                padding: 1rem;
+                overflow: hidden;
+                /* Evita que las imágenes animadas causen scroll lateral */
+            }
+
+            .intro-text,
+            .intro-image {
+                width: 100% !important;
+                max-width: 100%;
+                padding: 0;
+                margin: 10px 0;
+            }
+
+            /* Ajuste de las tarjetas de servicios */
+            .services-container {
+                grid-template-columns: 1fr;
+                /* Una columna en móvil */
+                padding: 10px;
+            }
+
+            /* Ajuste del Hero para que el texto no toque los bordes */
+            .hero-content h1 {
+                font-size: 1.8rem;
+                padding: 0 10px;
+            }
+
+            /* Evita que las imágenes con reveal causen problemas al cargar */
+            .reveal-intro-img,
+            .reveal-gif {
+                max-width: 100%;
+                height: auto;
+            }
+        }
     </style>
 </head>
 
