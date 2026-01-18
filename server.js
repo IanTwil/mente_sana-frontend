@@ -1,28 +1,26 @@
 const express = require('express');
 const { Pool } = require('pg');
-// Busca donde dice const cors = ... y asegúrate que esté así:
 const cors = require('cors');
+
+const app = express(); // 1. PRIMERO creamos la app
+
+// 2. LUEGO configuramos los Middlewares
 app.use(cors({
-    origin: '*', // Esto permite que cualquier origen (como tu GitHub Pages) acceda
+    origin: '*', // Permite conexiones desde GitHub Pages o cualquier sitio
     methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
 }));
-
-const app = express();
-
-// 1. CONFIGURACIÓN DE MIDDLEWARES
-app.use(cors());
 app.use(express.json());
 
-// 2. CONFIGURACIÓN DE PUERTO (Dinámico para Render)
+// 3. CONFIGURACIÓN DE PUERTO (Dinámico para Render)
 const PORT = process.env.PORT || 10000;
 
-// 3. CONFIGURACIÓN DE BASE DE DATOS
+// 4. CONFIGURACIÓN DE BASE DE DATOS
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
 });
 
-// 4. FUNCIÓN PARA CREAR LA TABLA
+// 5. FUNCIÓN PARA CREAR LA TABLA
 const inicializarBaseDeDatos = async () => {
     const queryTabla = `
         CREATE TABLE IF NOT EXISTS comentarios (
@@ -41,9 +39,20 @@ const inicializarBaseDeDatos = async () => {
     }
 };
 
-// 5. RUTAS
+// 6. RUTAS
 app.get('/', (req, res) => {
     res.send('Servidor de MenteSana funcionando correctamente 🚀');
+});
+
+// Ruta para el panel de administración
+app.get('/admin/todo', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM comentarios ORDER BY fecha DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error("Error en admin/todo:", err);
+        res.status(500).send('Error en el servidor al obtener todos los comentarios');
+    }
 });
 
 app.post('/comentarios', async (req, res) => {
@@ -85,24 +94,25 @@ app.get('/comentarios/:lectura_id', async (req, res) => {
     }
 });
 
-// ... arriba están las rutas de /comentarios ...
+// Ruta para eliminar comentarios
+app.delete('/comentarios/:id', async (req, res) => {
+    const { id } = req.params;
+    const adminKey = req.headers['x-admin-key'];
+    const CLAVE_SECRETA = "DoloresSucre2024";
 
-// ESTA ES LA RUTA QUE TE FALTA O ESTÁ MAL ESCRITA
-app.get('/admin/todo', async (req, res) => {
+    if (adminKey !== CLAVE_SECRETA) {
+        return res.status(401).send('No autorizado');
+    }
+
     try {
-        const result = await pool.query('SELECT * FROM comentarios ORDER BY fecha DESC');
-        res.json(result.rows);
+        await pool.query('DELETE FROM comentarios WHERE id = $1', [id]);
+        res.send('Comentario eliminado');
     } catch (err) {
-        console.error("Error en admin/todo:", err);
-        res.status(500).send('Error en el servidor al obtener todos los comentarios');
+        res.status(500).send('Error');
     }
 });
 
-// ... abajo está el app.listen ...
-
-// (Otras rutas como DELETE y ADMIN permanecen igual...)
-
-// 6. ENCENDIDO DEL SERVIDOR (Solo una vez al final)
+// 7. ENCENDIDO DEL SERVIDOR
 inicializarBaseDeDatos().then(() => {
     app.listen(PORT, () => {
         console.log(`🚀 Servidor funcionando en puerto ${PORT}`);
