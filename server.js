@@ -1,6 +1,11 @@
 const express = require('express');
 const { Pool } = require('pg');
+// Busca donde dice const cors = ... y asegúrate que esté así:
 const cors = require('cors');
+app.use(cors({
+    origin: '*', // Esto permite que cualquier origen (como tu GitHub Pages) acceda
+    methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
+}));
 
 const app = express();
 
