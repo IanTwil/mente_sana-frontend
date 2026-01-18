@@ -85,6 +85,21 @@ app.get('/comentarios/:lectura_id', async (req, res) => {
     }
 });
 
+// ... arriba están las rutas de /comentarios ...
+
+// ESTA ES LA RUTA QUE TE FALTA O ESTÁ MAL ESCRITA
+app.get('/admin/todo', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM comentarios ORDER BY fecha DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error("Error en admin/todo:", err);
+        res.status(500).send('Error en el servidor al obtener todos los comentarios');
+    }
+});
+
+// ... abajo está el app.listen ...
+
 // (Otras rutas como DELETE y ADMIN permanecen igual...)
 
 // 6. ENCENDIDO DEL SERVIDOR (Solo una vez al final)
