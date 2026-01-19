@@ -69,10 +69,20 @@
     </div>
 
     <script>
-        // URL CORREGIDA
+
         const API_URL = "https://mente-sana-frontend.onrender.com";
 
+
+        let adminPass = "";
+
         async function loadData() {
+
+            adminPass = prompt("Ingrese la clave de administrador para acceder al panel:");
+            if (!adminPass) {
+                document.body.innerHTML = "<h1>Acceso denegado</h1><p>Se requiere clave para ver este panel.</p>";
+                return;
+            }
+
             loadComments();
             loadUsers();
         }
@@ -80,7 +90,12 @@
         async function loadComments() {
             const container = document.getElementById('adminList');
             try {
-                const res = await fetch(`${API_URL}/admin/todo`);
+                const res = await fetch(`${API_URL}/admin/todo`, {
+                    headers: { 'x-admin-key': adminPass } // Enviamos la clave
+                });
+
+                if (!res.ok) throw new Error("No autorizado");
+
                 const data = await res.json();
 
                 if (data.length === 0) {
@@ -88,7 +103,7 @@
                     return;
                 }
 
-                let html = '<table><tr><th>ID</th><th>Lectura</th><th>Autor (Nombre + Rol + #ID)</th><th>Comentario</th><th>Acción</th></tr>';
+                let html = '<table><tr><th>ID</th><th>Lectura</th><th>Autor</th><th>Comentario</th><th>Acción</th></tr>';
                 data.forEach(c => {
                     html += `<tr>
                     <td>${c.id}</td>
@@ -99,15 +114,20 @@
                 </tr>`;
                 });
                 container.innerHTML = html + '</table>';
-            } catch (e) { container.innerHTML = "<p style='color:red;'>Error al cargar comentarios.</p>"; }
+            } catch (e) {
+                container.innerHTML = "<p style='color:red;'>Error: Clave incorrecta o servidor apagado.</p>";
+            }
         }
 
         async function loadUsers() {
             const container = document.getElementById('usersList');
             try {
-                // Nota: Necesitas crear esta ruta en tu server.js si quieres ver la lista
-                const res = await fetch(`${API_URL}/admin/usuarios`);
-                if (!res.ok) throw new Error();
+                const res = await fetch(`${API_URL}/admin/usuarios`, {
+                    headers: { 'x-admin-key': adminPass } // Enviamos la clave
+                });
+
+                if (!res.ok) throw new Error("No autorizado");
+
                 const data = await res.json();
 
                 let html = '<table><tr><th>Nombre Real</th><th>Rol</th><th>ID Asignado (#)</th></tr>';
@@ -120,7 +140,7 @@
                 });
                 container.innerHTML = html + '</table>';
             } catch (e) {
-                container.innerHTML = "<p>Para ver la lista de usuarios, añade la ruta /admin/usuarios en tu server.js</p>";
+                container.innerHTML = "<p style='color:red;'>No se pudo cargar la lista de usuarios (Clave incorrecta).</p>";
             }
         }
 

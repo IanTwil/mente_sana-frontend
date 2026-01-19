@@ -4,25 +4,20 @@ const cors = require('cors');
 
 const app = express();
 
-
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
 }));
 app.use(express.json());
 
-
 const PORT = process.env.PORT || 10000;
-
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
 });
 
-
 const inicializarBaseDeDatos = async () => {
-
     const queryTablaComentarios = `
         CREATE TABLE IF NOT EXISTS comentarios (
             id SERIAL PRIMARY KEY,
@@ -32,7 +27,6 @@ const inicializarBaseDeDatos = async () => {
             fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     `;
-
 
     const queryTablaUsuarios = `
         CREATE TABLE IF NOT EXISTS usuarios (
@@ -52,12 +46,21 @@ const inicializarBaseDeDatos = async () => {
     }
 };
 
-// 6. RUTAS
+// --- RUTAS ---
+
 app.get('/', (req, res) => {
     res.send('Servidor de MenteSana funcionando correctamente 🚀');
 });
 
+// Ruta para el panel de administración (COMENTARIOS) - PROTEGIDA
 app.get('/admin/todo', async (req, res) => {
+    const adminKey = req.headers['x-admin-key'];
+    const CLAVE_SECRETA = process.env.ADMIN_PASSWORD;
+
+    if (adminKey !== CLAVE_SECRETA) {
+        return res.status(401).send('No autorizado');
+    }
+
     try {
         const result = await pool.query('SELECT * FROM comentarios ORDER BY fecha DESC');
         res.json(result.rows);
@@ -66,7 +69,16 @@ app.get('/admin/todo', async (req, res) => {
         res.status(500).send('Error en el servidor al obtener todos los comentarios');
     }
 });
+
+// Ruta para el panel de administración (USUARIOS) - PROTEGIDA
 app.get('/admin/usuarios', async (req, res) => {
+    const adminKey = req.headers['x-admin-key'];
+    const CLAVE_SECRETA = process.env.ADMIN_PASSWORD;
+
+    if (adminKey !== CLAVE_SECRETA) {
+        return res.status(401).send('No autorizado');
+    }
+
     try {
         const result = await pool.query('SELECT nombre_real, rol, digitos_id FROM usuarios ORDER BY nombre_real ASC');
         res.json(result.rows);
@@ -74,6 +86,7 @@ app.get('/admin/usuarios', async (req, res) => {
         res.status(500).send('Error al obtener usuarios');
     }
 });
+
 app.post('/comentarios', async (req, res) => {
     const { lectura_id, nombre, contenido } = req.body;
     const palabrasProhibidas = ['tonto', 'estúpido', 'basura', 'mierda', 'puto'];
@@ -113,12 +126,11 @@ app.get('/comentarios/:lectura_id', async (req, res) => {
     }
 });
 
-// Ruta para eliminar comentarios
+// Ruta para eliminar comentarios - PROTEGIDA
 app.delete('/comentarios/:id', async (req, res) => {
     const { id } = req.params;
     const adminKey = req.headers['x-admin-key'];
-
-    const CLAVE_SECRETA = process.env.ADMIN_PASSWORD || "VALOR_DE_SEGURIDAD_MUY_LARGO_123";
+    const CLAVE_SECRETA = process.env.ADMIN_PASSWORD;
 
     if (adminKey !== CLAVE_SECRETA) {
         return res.status(401).send('No autorizado');
@@ -134,7 +146,6 @@ app.delete('/comentarios/:id', async (req, res) => {
 
 app.post('/obtener-identidad', async (req, res) => {
     const { nombre, rol } = req.body;
-
     try {
         const usuarioExistente = await pool.query(
             'SELECT digitos_id FROM usuarios WHERE nombre_real = $1 AND rol = $2',
@@ -145,12 +156,10 @@ app.post('/obtener-identidad', async (req, res) => {
             return res.json({ digitos_id: usuarioExistente.rows[0].digitos_id });
         } else {
             const nuevoId = Math.floor(1000 + Math.random() * 9000).toString();
-
             await pool.query(
                 'INSERT INTO usuarios (nombre_real, rol, digitos_id) VALUES ($1, $2, $3)',
                 [nombre, rol, nuevoId]
             );
-
             return res.json({ digitos_id: nuevoId });
         }
     } catch (err) {
@@ -159,7 +168,7 @@ app.post('/obtener-identidad', async (req, res) => {
     }
 });
 
-// 7. ENCENDIDO DEL SERVIDOR
+// --- ENCENDIDO DEL SERVIDOR ---
 inicializarBaseDeDatos().then(() => {
     app.listen(PORT, () => {
         console.log(`🚀 Servidor funcionando en puerto ${PORT}`);
