@@ -57,7 +57,6 @@ app.get('/', (req, res) => {
     res.send('Servidor de MenteSana funcionando correctamente 🚀');
 });
 
-// Ruta para el panel de administración
 app.get('/admin/todo', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM comentarios ORDER BY fecha DESC');
@@ -67,7 +66,6 @@ app.get('/admin/todo', async (req, res) => {
         res.status(500).send('Error en el servidor al obtener todos los comentarios');
     }
 });
-// Añadir esto en server.js para poder ver los usuarios en el panel admin
 app.get('/admin/usuarios', async (req, res) => {
     try {
         const result = await pool.query('SELECT nombre_real, rol, digitos_id FROM usuarios ORDER BY nombre_real ASC');
@@ -119,7 +117,8 @@ app.get('/comentarios/:lectura_id', async (req, res) => {
 app.delete('/comentarios/:id', async (req, res) => {
     const { id } = req.params;
     const adminKey = req.headers['x-admin-key'];
-    const CLAVE_SECRETA = "DoloresSucre2024";
+
+    const CLAVE_SECRETA = process.env.ADMIN_PASSWORD || "VALOR_DE_SEGURIDAD_MUY_LARGO_123";
 
     if (adminKey !== CLAVE_SECRETA) {
         return res.status(401).send('No autorizado');
@@ -133,22 +132,18 @@ app.delete('/comentarios/:id', async (req, res) => {
     }
 });
 
-// Ruta para verificar identidad y obtener ID permanente
 app.post('/obtener-identidad', async (req, res) => {
     const { nombre, rol } = req.body;
 
     try {
-        // 1. Buscamos si el usuario ya tiene un ID asignado
         const usuarioExistente = await pool.query(
             'SELECT digitos_id FROM usuarios WHERE nombre_real = $1 AND rol = $2',
             [nombre, rol]
         );
 
         if (usuarioExistente.rows.length > 0) {
-            // Si ya existe, devolvemos su ID de siempre
             return res.json({ digitos_id: usuarioExistente.rows[0].digitos_id });
         } else {
-            // 2. Si es nuevo, generamos uno de 4 dígitos
             const nuevoId = Math.floor(1000 + Math.random() * 9000).toString();
 
             await pool.query(
