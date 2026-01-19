@@ -2,27 +2,28 @@ const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
 
-const app = express(); // 1. PRIMERO creamos la app
+const app = express();
 
-// 2. LUEGO configuramos los Middlewares
+
 app.use(cors({
-    origin: '*', // Permite conexiones desde GitHub Pages o cualquier sitio
+    origin: '*',
     methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
 }));
 app.use(express.json());
 
-// 3. CONFIGURACIÓN DE PUERTO (Dinámico para Render)
+
 const PORT = process.env.PORT || 10000;
 
-// 4. CONFIGURACIÓN DE BASE DE DATOS
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
 });
 
-// 5. FUNCIÓN PARA CREAR LA TABLA
+
 const inicializarBaseDeDatos = async () => {
-    const queryTabla = `
+
+    const queryTablaComentarios = `
         CREATE TABLE IF NOT EXISTS comentarios (
             id SERIAL PRIMARY KEY,
             lectura_id VARCHAR(50) NOT NULL,
@@ -31,11 +32,23 @@ const inicializarBaseDeDatos = async () => {
             fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     `;
+
+
+    const queryTablaUsuarios = `
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id SERIAL PRIMARY KEY,
+            nombre_real VARCHAR(100) UNIQUE NOT NULL,
+            rol VARCHAR(50) NOT NULL,
+            digitos_id VARCHAR(4) NOT NULL
+        );
+    `;
+
     try {
-        await pool.query(queryTabla);
-        console.log("✅ Tabla 'comentarios' lista");
+        await pool.query(queryTablaComentarios);
+        await pool.query(queryTablaUsuarios);
+        console.log("✅ Tablas 'comentarios' y 'usuarios' listas");
     } catch (err) {
-        console.error("❌ Error al crear la tabla:", err);
+        console.error("❌ Error al crear las tablas:", err);
     }
 };
 
@@ -109,6 +122,37 @@ app.delete('/comentarios/:id', async (req, res) => {
         res.send('Comentario eliminado');
     } catch (err) {
         res.status(500).send('Error');
+    }
+});
+
+// Ruta para verificar identidad y obtener ID permanente
+app.post('/obtener-identidad', async (req, res) => {
+    const { nombre, rol } = req.body;
+
+    try {
+        // 1. Buscamos si el usuario ya tiene un ID asignado
+        const usuarioExistente = await pool.query(
+            'SELECT digitos_id FROM usuarios WHERE nombre_real = $1 AND rol = $2',
+            [nombre, rol]
+        );
+
+        if (usuarioExistente.rows.length > 0) {
+            // Si ya existe, devolvemos su ID de siempre
+            return res.json({ digitos_id: usuarioExistente.rows[0].digitos_id });
+        } else {
+            // 2. Si es nuevo, generamos uno de 4 dígitos
+            const nuevoId = Math.floor(1000 + Math.random() * 9000).toString();
+
+            await pool.query(
+                'INSERT INTO usuarios (nombre_real, rol, digitos_id) VALUES ($1, $2, $3)',
+                [nombre, rol, nuevoId]
+            );
+
+            return res.json({ digitos_id: nuevoId });
+        }
+    } catch (err) {
+        console.error("Error en obtener-identidad:", err);
+        res.status(500).json({ error: 'Error al procesar identidad' });
     }
 });
 

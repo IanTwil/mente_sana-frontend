@@ -447,127 +447,7 @@
         }
 
         /* --- DISEÑO DE COMENTARIOS --- */
-        .comment-section {
-            margin-top: 50px;
-            padding: 30px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
 
-        .comment-section h4 {
-            font-size: 1.5rem;
-            color: var(--primary);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .comment-section h4::before {
-            content: '💬';
-            font-size: 1.2rem;
-        }
-
-        .comment-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 40px;
-        }
-
-        .comment-input-name,
-        .comment-input-text {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 12px 15px;
-            color: white;
-            font-family: inherit;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-        }
-
-        .comment-input-name:focus,
-        .comment-input-text:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: rgba(26, 188, 156, 0.05);
-            box-shadow: 0 0 10px rgba(26, 188, 156, 0.1);
-        }
-
-        .comment-input-text {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .btn-send-comment {
-            align-self: flex-end;
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(26, 188, 156, 0.2);
-        }
-
-        .btn-send-comment:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(26, 188, 156, 0.3);
-            filter: brightness(1.1);
-        }
-
-        .comments-list {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .comment-item {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 20px;
-            border-radius: 12px;
-            border-left: 4px solid var(--primary);
-            animation: fadeIn 0.5s ease forwards;
-        }
-
-        .comment-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 0.85rem;
-        }
-
-        .comment-author {
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        .comment-date {
-            color: #7f8c8d;
-        }
-
-        .comment-text {
-            color: #cbd5e0;
-            line-height: 1.5;
-            font-size: 0.95rem;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
 
         #canvas-particles {
             position: fixed;
@@ -640,6 +520,159 @@
         /* Esta clase la pondrá el JavaScript automáticamente */
         .blog-img.loaded {
             opacity: 1 !important;
+        }
+
+        /* --- MEJORA DE LA SECCIÓN DE COMENTARIOS --- */
+        /* --- SECCIÓN DE COMENTARIOS (UNIFICADA Y LIMPIA) --- */
+        .comment-section {
+            margin-top: 50px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: left;
+        }
+
+        .comment-section h4 {
+            font-size: 1.4rem;
+            color: var(--primary);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .comment-form {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Mejora de los campos de entrada para máxima legibilidad */
+        .comment-input-name,
+        .comment-input-text {
+            width: 100%;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.95);
+            /* Fondo casi blanco para ver bien el texto */
+            color: #2c3e50;
+            /* Texto oscuro para contraste profesional */
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: 0.3s;
+            outline: none;
+        }
+
+        /* Estado de foco: resalta el campo que estás usando */
+        .comment-input-name:focus,
+        .comment-input-text:focus {
+            background: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 0 12px rgba(26, 188, 156, 0.3);
+        }
+
+        /* Estilo para cuando el nombre está bloqueado (Estudiantes) */
+        .comment-input-name[readonly] {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--primary);
+            border: 1px dashed var(--primary);
+            cursor: not-allowed;
+        }
+
+        .comment-input-text {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .btn-send-comment {
+            background: linear-gradient(135deg, #1abc9c, #16a085);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            align-self: flex-end;
+            /* Lo alinea a la derecha */
+        }
+
+        .btn-send-comment:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(26, 188, 156, 0.4);
+        }
+
+        /* --- LISTADO DE COMENTARIOS PUBLICADOS --- */
+        .comment-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 15px;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .comment-avatar {
+            width: 45px;
+            height: 45px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .comment-content {
+            flex-grow: 1;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .comment-date {
+            font-size: 0.8rem;
+            opacity: 0.5;
+        }
+
+        .comment-text {
+            font-size: 0.95rem;
+            color: #ecf0f1;
+            line-height: 1.5;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -762,13 +795,19 @@
     </div>
 
     <footer>
-        <p>&copy; 2023 Proyecto de Apoyo Estudiantil. Todos los derechos reservados.</p>
+        <p>&copy; 2026 Proyecto de Apoyo Estudiantil. Todos los derechos reservados.</p>
         <p>Institución Educativa Fiscal - Dolores Sucre</p>
     </footer>
 
     <script>
-        // Sustituye esta URL por la de tu BACKEND en Render
+        // 1. Configuración Base
         const API_URL = "https://mente-sana-frontend.onrender.com";
+
+        // Recuperar datos de sesión
+        const usuarioLogueado = localStorage.getItem('usuarioMenteSana') || "";
+        const rolUsuario = localStorage.getItem('rolMenteSana') || "Invitado";
+
+        // 2. Navegación Mobile
         const hamburger = document.querySelector(".hamburger");
         const navMenu = document.querySelector(".nav-menu");
 
@@ -777,11 +816,10 @@
             navMenu.classList.toggle("active");
         });
 
-        // Función para marcar el enlace activo
+        // 3. Marcar enlace activo
         function setActiveLink() {
             const currentPath = window.location.pathname.split("/").pop();
             const navLinks = document.querySelectorAll('.nav-link');
-
             navLinks.forEach(link => {
                 if (link.getAttribute('href') === currentPath) {
                     link.classList.add('active');
@@ -790,9 +828,9 @@
                 }
             });
         }
-
         window.onload = setActiveLink;
 
+        // 4. Base de datos de lecturas (abreviada para el ejemplo, mantén la tuya completa)
         const lecturas = {
             'respiracion': {
                 titulo: 'Respiración Consciente: El Interruptor del Calma',
@@ -802,7 +840,7 @@
                     <p><b>La Técnica 4-7-8:</b> Inhala por 4 segundos, mantén por 7 y exhala por 8. Repetir esto cuatro veces puede detener un ataque de ansiedad en potencia. Practicar esto antes de dormir permitirá que tu mente sepa que está segura.</p>
                     <div class="pdf-container">
                         <span>Guía completa de ejercicios respiratorios:</span>
-                        <a href="https://www.who.int/docs/default-source/mental-health/sh-2020-spa-web.pdf" target="_blank" class="pdf-link">Descargar PDF</a>
+                        <a href="https://dsvalpo.cl/wp-content/uploads/2020/04/RESPIRACI%C3%93N-CONSCIENTE-PARA-OXIGENAR-EL-CEREBRO.pdf" target="_blank" class="pdf-link">Descargar PDF</a>
                     </div>
                 `
             },
@@ -895,18 +933,47 @@
             }
         };
 
-        // MODIFICACIÓN: Función para abrir (asegúrate de que incluya cargarComentarios)
+        // --- LÓGICA DEL MODAL Y COMENTARIOS ---
+
+        // --- SISTEMA DE IDENTIDAD Y COMENTARIOS ---
+
+        // 1. Generar o recuperar el ID único de 4 dígitos para el usuario
+        function obtenerIdUsuario() {
+            let id = localStorage.getItem('idMenteSana');
+            if (!id) {
+                id = Math.floor(1000 + Math.random() * 9000); // Genera un número entre 1000 y 9999
+                localStorage.setItem('idMenteSana', id);
+            }
+            return id;
+        }
+
         function openModal(id) {
             const data = lecturas[id];
             const overlay = document.getElementById('modalOverlay');
 
+            // Recuperar datos de sesión y generar identidad
+            const usuarioLogueado = localStorage.getItem('usuarioMenteSana') || "Invitado";
+            const rolUsuario = localStorage.getItem('rolMenteSana') || "Visitante";
+            const idUsuario = obtenerIdUsuario();
+
+            // Formato: Nombre (Rol) #ID
+            const identidadVerificada = `${usuarioLogueado} (${rolUsuario}) #${idUsuario}`;
+
             const htmlComentarios = `
         <div class="comment-section">
-            <h4>Comunidad y Experiencias</h4>
+            <h4><i class="fas fa-comments"></i> Comunidad y Experiencias</h4>
             <div class="comment-form">
-                <input type="text" id="userName" class="comment-input-name" placeholder="Tu nombre o apodo...">
-                <textarea id="userComment" class="comment-input-text" placeholder="Comparte tu reflexión o consejo..."></textarea>
-                <button class="btn-send-comment" onclick="saveComment('${id}')">Publicar comentario</button>
+                <label style="font-size: 0.75rem; color: var(--primary); margin-bottom: 5px; font-weight: 600;">IDENTIDAD VERIFICADA:</label>
+                <input type="text" id="userName" class="comment-input-name" 
+                    value="${identidadVerificada}" 
+                    readonly 
+                    style="background: rgba(26, 188, 156, 0.1); color: var(--primary); border: 1px solid var(--primary); font-weight: bold; cursor: not-allowed; margin-bottom: 10px;">
+                
+                <textarea id="userComment" class="comment-input-text" placeholder="Comparte tu reflexión o consejo con la comunidad..."></textarea>
+                
+                <button class="btn-send-comment" onclick="saveComment('${id}')">
+                    Publicar <i class="fas fa-paper-plane"></i>
+                </button>
             </div>
             <div class="comments-list" id="commentsList">Cargando pensamientos...</div>
         </div>
@@ -917,38 +984,37 @@
             overlay.style.display = 'flex';
             setTimeout(() => overlay.classList.add('active'), 10);
 
-            cargarComentarios(id); // Cargamos los comentarios guardados
+            cargarComentarios(id);
         }
 
-        // MODIFICACIÓN: Función para cerrar (Activa la animación que ya tienes en CSS)
         function closeModal() {
             const overlay = document.getElementById('modalOverlay');
             overlay.classList.remove('active');
             overlay.classList.add('closing');
 
-            // Esperamos 500ms (lo que dura tu transición CSS) antes de ocultarlo
             setTimeout(() => {
                 overlay.style.display = 'none';
                 overlay.classList.remove('closing');
             }, 500);
         }
 
-        // EXTRA: Cerrar al hacer clic fuera del cuadro blanco
         window.onclick = function (event) {
             const overlay = document.getElementById('modalOverlay');
             if (event.target == overlay) {
                 closeModal();
             }
-        }
+        };
+
         async function saveComment(lecturaId) {
             const nameInput = document.getElementById('userName');
             const commentInput = document.getElementById('userComment');
+            const btn = document.querySelector('.btn-send-comment');
 
             const nombre = nameInput.value.trim();
             const contenido = commentInput.value.trim();
 
-            if (!nombre || !contenido) {
-                alert("Por favor, completa ambos campos para comentar.");
+            if (!contenido) {
+                alert("Por favor, escribe un comentario antes de publicar.");
                 return;
             }
 
@@ -958,8 +1024,10 @@
                 contenido: contenido
             };
 
+            btn.disabled = true;
+            btn.innerText = "Publicando...";
+
             try {
-                // Usamos la variable API_URL
                 const response = await fetch(`${API_URL}/comentarios`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -967,7 +1035,6 @@
                 });
 
                 if (response.ok) {
-                    nameInput.value = '';
                     commentInput.value = '';
                     cargarComentarios(lecturaId);
                 } else {
@@ -976,36 +1043,50 @@
                 }
             } catch (error) {
                 console.error("Error de conexión:", error);
-                alert("No se pudo conectar con el servidor de base de datos.");
+                alert("No se pudo conectar con el servidor.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Publicar <i class="fas fa-paper-plane"></i>';
             }
         }
 
         async function cargarComentarios(lecturaId) {
             const list = document.getElementById('commentsList');
-
             try {
-                // Usamos la variable API_URL
                 const response = await fetch(`${API_URL}/comentarios/${lecturaId}`);
                 const comentarios = await response.json();
 
                 if (comentarios.length === 0) {
-                    list.innerHTML = '<p style="color: #7f8c8d; font-size: 0.9rem;">Aún no hay comentarios. ¡Sé el primero!</p>';
+                    list.innerHTML = '<p style="color: #7f8c8d; font-size: 0.9rem; text-align: center; font-style: italic;">Aún no hay reflexiones. ¡Sé el primero en compartir!</p>';
                     return;
                 }
 
-                list.innerHTML = comentarios.map(c => `
-            <div class="comment-item">
-                <div class="comment-header">
-                    <span class="comment-author">${c.nombre}</span>
-                    <span class="comment-date">${new Date(c.fecha).toLocaleDateString()}</span>
-                </div>
-                <p class="comment-text">${c.contenido}</p>
-            </div>
-        `).join('');
+                list.innerHTML = comentarios.map(c => {
+                    const inicial = c.nombre ? c.nombre.charAt(0).toUpperCase() : '?';
 
+                    // Separar el nombre del ID visualmente
+                    const partes = c.nombre.split('#');
+                    const nombreSinId = partes[0];
+                    const idVisual = partes[1] ? `#${partes[1]}` : '';
+
+                    return `
+                <div class="comment-item">
+                    <div class="comment-avatar">${inicial}</div>
+                    <div class="comment-content">
+                        <div class="comment-header">
+                            <span class="comment-author">
+                                ${nombreSinId}<small style="color: var(--primary); opacity: 0.5; font-size: 0.7rem; margin-left: 5px;">${idVisual}</small>
+                            </span>
+                            <span class="comment-date">${new Date(c.fecha).toLocaleDateString()}</span>
+                        </div>
+                        <p class="comment-text">${c.contenido}</p>
+                    </div>
+                </div>
+            `;
+                }).join('');
             } catch (error) {
                 console.error("Error al cargar:", error);
-                list.innerHTML = '<p style="color: #e74c3c;">Error al conectar con la base de datos.</p>';
+                list.innerHTML = '<p style="color: #e74c3c;">Error al conectar con la comunidad.</p>';
             }
         }
     </script>

@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contacto | MenteSana</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <style>
         * {
             margin: 0;
@@ -529,7 +530,7 @@
     <script>
         const API_URL = 'https://mente-sana-frontend.onrender.com';
 
-        // --- 1. GESTIÓN DE ADMIN (Persistente y Segura) ---
+        // --- 1. GESTIÓN DE ADMIN ---
         let isAdmin = new URLSearchParams(window.location.search).get('admin') === 'mente123';
 
         if (isAdmin) {
@@ -538,71 +539,64 @@
             isAdmin = localStorage.getItem('adminMenteSana') === 'true';
         }
 
-        // --- MENÚ HAMBURGUESA ---
-        const hamburger = document.querySelector(".hamburger");
-        const navMenu = document.querySelector(".nav-menu");
-        if (hamburger) {
-            hamburger.addEventListener("click", () => {
-                hamburger.classList.toggle("active");
-                navMenu.classList.toggle("active");
-            });
-        }
-
         const contactForm = document.getElementById('contactForm');
         const commentsContainer = document.getElementById('commentsContainer');
+        const nameInput = document.getElementById('name');
 
-        // --- CARGA INICIAL ---
+        // --- 2. CARGA INICIAL ---
         document.addEventListener('DOMContentLoaded', () => {
             loadCommentsFromDB();
-            verificarIdentidad();
 
             if (isAdmin) {
                 configurarModoAdmin();
+            } else {
+                verificarIdentidad();
             }
         });
 
         function configurarModoAdmin() {
+            // Cambiar título y añadir botón de salir
             const formHeader = document.querySelector('.contact-container h2');
             if (formHeader) {
-                formHeader.innerHTML = 'Enviar mensaje como <span style="color:#1abc9c;">Administrador</span>';
-                // Botón para salir del modo admin (útil para pruebas)
+                formHeader.innerHTML = 'Modo <span style="color:#1abc9c;">Administrador</span> ';
                 const logoutBtn = document.createElement('button');
-                logoutBtn.innerHTML = "Cerrar sesión admin";
-                logoutBtn.style = "font-size:10px; margin-left:10px; cursor:pointer; background:none; border:1px solid #ccc; border-radius:10px; color:#666;";
-                logoutBtn.onclick = () => { localStorage.removeItem('adminMenteSana'); location.reload(); };
+                logoutBtn.innerHTML = "Salir";
+                logoutBtn.style = "font-size:10px; cursor:pointer; background:#eee; border:none; padding:2px 8px; border-radius:10px; vertical-align:middle;";
+                logoutBtn.onclick = () => { localStorage.removeItem('adminMenteSana'); window.location.href = 'contacto.html'; };
                 formHeader.appendChild(logoutBtn);
             }
 
-            const inputNombre = document.getElementById('name');
-            if (inputNombre && inputNombre.parentElement) {
-                inputNombre.parentElement.style.display = 'none';
+            // FIX: Quitar el 'required' para que el formulario deje enviar
+            if (nameInput) {
+                nameInput.required = false;
+                if (nameInput.parentElement) {
+                    nameInput.parentElement.style.display = 'none';
+                }
             }
         }
 
         function verificarIdentidad() {
-            if (isAdmin) return;
             const nombreGuardado = localStorage.getItem('usuarioMenteSana');
             const rolGuardado = localStorage.getItem('rolMenteSana');
-            const inputNombre = document.getElementById('name');
 
-            if (inputNombre && nombreGuardado) {
-                inputNombre.value = (rolGuardado === 'Estudiante') ? nombreGuardado : `${nombreGuardado} (Invitado)`;
-                inputNombre.readOnly = true;
-                inputNombre.style.backgroundColor = "#f0f0f0";
+            if (nameInput && nombreGuardado) {
+                nameInput.value = (rolGuardado === 'Estudiante') ? nombreGuardado : `${nombreGuardado} (Invitado)`;
+                nameInput.readOnly = true;
+                nameInput.style.backgroundColor = "#f0f0f0";
             }
         }
 
-        // --- ENVIAR COMENTARIO (Corrección del error de envío) ---
+        // --- 3. ENVIAR COMENTARIO ---
         contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.querySelector('.btn-submit');
             const textElement = document.getElementById('comment');
             const text = textElement.value.trim();
 
-            if (!text) return alert("Escribe un mensaje antes de publicar.");
+            if (!text) return;
 
-            // Usamos un nombre sin caracteres especiales para la base de datos
-            let nombreFinal = isAdmin ? "Verificador MenteSana" : (document.getElementById('name').value || "Visitante");
+            // Nombre oficial para la base de datos
+            let nombreFinal = isAdmin ? "Verificador MenteSana" : (nameInput.value || "Visitante");
 
             btn.textContent = "Publicando...";
             btn.disabled = true;
@@ -622,43 +616,36 @@
                     textElement.value = '';
                     await loadCommentsFromDB();
                 } else {
-                    const errData = await response.json();
-                    alert("Error del servidor: " + (errData.error || "No se pudo publicar"));
+                    alert("Error al publicar.");
                 }
             } catch (error) {
-                console.error("Error:", error);
-                alert("Error de conexión. Revisa si el servidor está activo.");
+                alert("Error de conexión con el servidor.");
             } finally {
                 btn.textContent = "Publicar Comentario";
                 btn.disabled = false;
             }
         });
 
-        // --- CARGAR COMENTARIOS (Optimizado) ---
+        // --- 4. CARGAR Y RENDERIZAR COMENTARIOS ---
         async function loadCommentsFromDB() {
             try {
                 const response = await fetch(`${API_URL}/comentarios/contacto`);
-                if (!response.ok) throw new Error("Error al obtener comentarios");
-
                 const allComments = await response.json();
                 commentsContainer.innerHTML = '';
 
                 if (!allComments || allComments.length === 0) {
-                    commentsContainer.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">No hay mensajes aún. ¡Sé el primero!</p>';
+                    commentsContainer.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">No hay mensajes aún.</p>';
                     return;
                 }
 
-                // Separar principales de respuestas
                 const principales = allComments.filter(c => !c.contenido.trim().startsWith('@'));
                 const respuestas = allComments.filter(c => c.contenido.trim().startsWith('@'));
 
                 principales.forEach(parent => {
                     const threadWrapper = document.createElement('div');
                     threadWrapper.className = 'comment-thread';
-                    threadWrapper.style.marginBottom = "20px";
                     threadWrapper.innerHTML = generateCommentHTML(parent, false);
 
-                    // Buscamos respuestas que mencionen al autor (con o sin emoji)
                     const susRespuestas = respuestas.filter(r => {
                         const nombreLimpio = parent.nombre.replace("✅ ", "");
                         return r.contenido.includes(`@${parent.nombre}`) || r.contenido.includes(`@${nombreLimpio}`);
@@ -667,10 +654,6 @@
                     if (susRespuestas.length > 0) {
                         const repliesDiv = document.createElement('div');
                         repliesDiv.className = 'replies-container';
-                        repliesDiv.style.marginLeft = "30px";
-                        repliesDiv.style.borderLeft = "2px solid #ddd";
-                        repliesDiv.style.paddingLeft = "15px";
-
                         susRespuestas.forEach(reply => {
                             repliesDiv.innerHTML += generateCommentHTML(reply, true);
                         });
@@ -679,42 +662,34 @@
                     commentsContainer.appendChild(threadWrapper);
                 });
             } catch (error) {
-                console.error("Error:", error);
-                commentsContainer.innerHTML = '<p style="color:red; text-align:center;">No se pudieron cargar los mensajes.</p>';
+                commentsContainer.innerHTML = '<p style="color:red; text-align:center;">Error al cargar mensajes.</p>';
             }
         }
 
-        // --- GENERAR HTML (Mejora visual) ---
         function generateCommentHTML(comment, isReply) {
-            const fecha = new Date(comment.fecha);
-            const dateStr = fecha.toLocaleDateString() + ' ' + fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-            // Detectamos si es oficial (independientemente de si viene con el icono desde la DB)
             const esOficial = comment.nombre.toLowerCase().includes("verificador");
             const nombreMostrar = esOficial ? "Verificador MenteSana" : comment.nombre;
-
             const contenidoMostrar = isReply ? comment.contenido.split(' ').slice(1).join(' ') : comment.contenido;
-            const claseCard = esOficial ? 'comment-item comentario-oficial' : (isReply ? 'reply-item' : 'comment-item');
 
+            const claseCard = esOficial ? 'comment-item comentario-oficial' : (isReply ? 'reply-item' : 'comment-item');
             const icono = esOficial ? '<i class="fas fa-user-shield" style="color:#1abc9c"></i>' : '<i class="fas fa-user-circle"></i>';
+            const fecha = new Date(comment.fecha).toLocaleString([], { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
             return `
-            <div class="${claseCard}" style="background:${esOficial ? '#f0fdfa' : (isReply ? '#fff' : '#fff')}; border-radius:15px; padding:15px; margin-top:10px; border:1px solid ${esOficial ? '#1abc9c' : '#eee'}; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                    <strong>${icono} ${nombreMostrar} 
-                        ${esOficial ? '<span style="font-size:0.6rem; background:#1abc9c; color:white; padding:2px 6px; border-radius:4px; margin-left:5px;">EQUIPO</span>' : ''}
-                    </strong>
-                    <small style="color:#999; font-size:0.75rem;">${dateStr}</small>
-                </div>
-                <p style="color:#444; margin-bottom:10px;">${contenidoMostrar}</p>
-                <div class="btn-action-group" style="display:flex; gap:10px;">
-                    ${!isReply ? `<button class="btn-reply-action" onclick="prepareReply('${nombreMostrar}')" style="border:none; background:none; color:#1abc9c; cursor:pointer; font-size:0.85rem;"><i class="fas fa-reply"></i> Responder</button>` : ''}
-                    ${isAdmin ? `<button class="btn-delete-action" onclick="deleteComment(${comment.id})" style="border:none; background:none; color:#e74c3c; cursor:pointer; font-size:0.85rem;"><i class="fas fa-trash-alt"></i> Eliminar</button>` : ''}
+            <div class="${claseCard}">
+                <strong>${icono} ${nombreMostrar} 
+                    ${esOficial ? '<span style="font-size:0.6rem; background:#1abc9c; color:white; padding:2px 6px; border-radius:4px; margin-left:5px;">EQUIPO</span>' : ''}
+                </strong>
+                <small>${fecha}</small>
+                <p>${contenidoMostrar}</p>
+                <div class="btn-action-group">
+                    ${!isReply ? `<button class="btn-reply-action" onclick="window.prepareReply('${nombreMostrar}')"><i class="fas fa-reply"></i> Responder</button>` : ''}
+                    ${isAdmin ? `<button class="btn-reply-action btn-delete-action" onclick="window.deleteComment(${comment.id})"><i class="fas fa-trash"></i> Eliminar</button>` : ''}
                 </div>
             </div>`;
         }
 
-        // --- FUNCIONES GLOBALES ---
+        // --- 5. FUNCIONES GLOBALES ---
         window.prepareReply = function (user) {
             const txt = document.getElementById('comment');
             txt.value = `@${user} `;
@@ -723,24 +698,31 @@
         };
 
         window.deleteComment = async function (id) {
-            const password = prompt("Clave de eliminación:");
+            const password = prompt("Clave de seguridad:");
             if (password !== "DoloresSucre2024") return alert("Clave incorrecta.");
 
-            if (confirm("¿Seguro que quieres eliminar este comentario?")) {
+            if (confirm("¿Eliminar este mensaje?")) {
                 try {
                     const response = await fetch(`${API_URL}/comentarios/${id}`, {
                         method: 'DELETE',
                         headers: { 'x-admin-key': password }
                     });
-                    if (response.ok) {
-                        loadCommentsFromDB();
-                    } else {
-                        alert("No se pudo eliminar.");
-                    }
+                    if (response.ok) loadCommentsFromDB();
                 } catch (e) { console.error(e); }
             }
         };
 
+        // Menú hamburguesa
+        const hamburger = document.querySelector(".hamburger");
+        const navMenu = document.querySelector(".nav-menu");
+        if (hamburger) {
+            hamburger.addEventListener("click", () => {
+                hamburger.classList.toggle("active");
+                navMenu.classList.toggle("active");
+            });
+        }
+
+        // Barra de progreso
         window.onscroll = function () {
             const barra = document.getElementById("progreso-barra");
             if (barra) {
