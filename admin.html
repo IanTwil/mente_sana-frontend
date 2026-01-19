@@ -12,10 +12,18 @@
             padding: 20px;
         }
 
+        .section-container {
+            margin-bottom: 50px;
+            background: #16213e;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 10px;
+            background: #0f3460;
         }
 
         th,
@@ -37,83 +45,103 @@
             cursor: pointer;
             border-radius: 4px;
         }
+
+        h2 {
+            color: #1abc9c;
+            border-bottom: 2px solid #1abc9c;
+            padding-bottom: 10px;
+        }
     </style>
 </head>
 
 <body>
-    <h1>Panel de Control de Comentarios</h1>
-    <div id="adminList">Cargando comentarios para moderar...</div>
+
+    <h1>Panel de Control Maestro</h1>
+
+    <div class="section-container">
+        <h2>Moderación de Comentarios</h2>
+        <div id="adminList">Cargando comentarios...</div>
+    </div>
+
+    <div class="section-container">
+        <h2>Usuarios e Identidades (IDs)</h2>
+        <div id="usersList">Cargando base de datos de usuarios...</div>
+    </div>
 
     <script>
-    // 1. CAMBIO IMPORTANTE: Usa la URL de tu BACKEND (el de Node.js)
-    const API_URL = "https://mente-sana-frontend.onrender"; 
+        // URL CORREGIDA
+        const API_URL = "https://mente-sana-frontend.onrender.com";
 
-    async function loadAll() {
-        const listContainer = document.getElementById('adminList');
-        listContainer.innerHTML = "<p>Cargando datos del servidor...</p>";
+        async function loadData() {
+            loadComments();
+            loadUsers();
+        }
 
-        try {
-            // Usamos la variable API_URL y apuntamos al backend
-            const res = await fetch(`${API_URL}/admin/todo`);
-            
-            if (!res.ok) throw new Error("Error al obtener datos");
-            
-            const data = await res.json();
-            
-            if (data.length === 0) {
-                listContainer.innerHTML = "<p>No hay comentarios en la base de datos.</p>";
-                return;
-            }
+        async function loadComments() {
+            const container = document.getElementById('adminList');
+            try {
+                const res = await fetch(`${API_URL}/admin/todo`);
+                const data = await res.json();
 
-            let html = '<table><tr><th>ID</th><th>Lectura</th><th>Autor</th><th>Comentario</th><th>Acción</th></tr>';
-            data.forEach(c => {
-                html += `<tr>
+                if (data.length === 0) {
+                    container.innerHTML = "<p>No hay comentarios.</p>";
+                    return;
+                }
+
+                let html = '<table><tr><th>ID</th><th>Lectura</th><th>Autor (Nombre + Rol + #ID)</th><th>Comentario</th><th>Acción</th></tr>';
+                data.forEach(c => {
+                    html += `<tr>
                     <td>${c.id}</td>
                     <td>${c.lectura_id}</td>
                     <td>${c.nombre}</td>
                     <td>${c.contenido}</td>
                     <td><button class="btn-delete" onclick="deleteComm(${c.id})">Eliminar</button></td>
                 </tr>`;
-            });
-            listContainer.innerHTML = html + '</table>';
-
-        } catch (error) {
-            console.error("Error:", error);
-            listContainer.innerHTML = `<p style="color:red;">Error: No se pudo conectar con el servidor. Asegúrate de que el Backend esté encendido.</p>`;
-        }
-    }
-
-    async function deleteComm(id) {
-        const password = prompt("Ingrese la clave de administrador para confirmar:");
-        if (!password) return;
-
-        if (confirm('¿Seguro que quieres borrar este comentario?')) {
-            try {
-                // Usamos la variable API_URL aquí también
-                const response = await fetch(`${API_URL}/comentarios/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'x-admin-key': password
-                    }
                 });
+                container.innerHTML = html + '</table>';
+            } catch (e) { container.innerHTML = "<p style='color:red;'>Error al cargar comentarios.</p>"; }
+        }
 
-                if (response.ok) {
-                    alert("Comentario eliminado con éxito.");
-                    loadAll();
-                } else {
-                    const mensaje = await response.text();
-                    alert("Error: " + mensaje);
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                alert("No se pudo conectar con el servidor.");
+        async function loadUsers() {
+            const container = document.getElementById('usersList');
+            try {
+                // Nota: Necesitas crear esta ruta en tu server.js si quieres ver la lista
+                const res = await fetch(`${API_URL}/admin/usuarios`);
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+
+                let html = '<table><tr><th>Nombre Real</th><th>Rol</th><th>ID Asignado (#)</th></tr>';
+                data.forEach(u => {
+                    html += `<tr>
+                    <td>${u.nombre_real}</td>
+                    <td>${u.rol}</td>
+                    <td>#${u.digitos_id}</td>
+                </tr>`;
+                });
+                container.innerHTML = html + '</table>';
+            } catch (e) {
+                container.innerHTML = "<p>Para ver la lista de usuarios, añade la ruta /admin/usuarios en tu server.js</p>";
             }
         }
-    }
 
-    // Ejecutar al cargar la página
-    loadAll();
-</script>
+        async function deleteComm(id) {
+            const password = prompt("Clave de administrador:");
+            if (!password) return;
+
+            if (confirm('¿Borrar comentario?')) {
+                try {
+                    const response = await fetch(`${API_URL}/comentarios/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'x-admin-key': password }
+                    });
+                    if (response.ok) { alert("Eliminado"); loadComments(); }
+                    else { alert("Error de clave o servidor"); }
+                } catch (error) { alert("Error de conexión"); }
+            }
+        }
+
+        loadData();
+    </script>
 </body>
 
 </html>

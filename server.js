@@ -67,7 +67,15 @@ app.get('/admin/todo', async (req, res) => {
         res.status(500).send('Error en el servidor al obtener todos los comentarios');
     }
 });
-
+// Añadir esto en server.js para poder ver los usuarios en el panel admin
+app.get('/admin/usuarios', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT nombre_real, rol, digitos_id FROM usuarios ORDER BY nombre_real ASC');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).send('Error al obtener usuarios');
+    }
+});
 app.post('/comentarios', async (req, res) => {
     const { lectura_id, nombre, contenido } = req.body;
     const palabrasProhibidas = ['tonto', 'estúpido', 'basura', 'mierda', 'puto'];
