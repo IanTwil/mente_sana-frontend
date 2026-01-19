@@ -91,7 +91,7 @@
             const container = document.getElementById('adminList');
             try {
                 const res = await fetch(`${API_URL}/admin/todo`, {
-                    headers: { 'x-admin-key': adminPass } // Enviamos la clave
+                    headers: { 'x-admin-key': adminPass } 
                 });
 
                 if (!res.ok) throw new Error("No autorizado");
@@ -123,7 +123,7 @@
             const container = document.getElementById('usersList');
             try {
                 const res = await fetch(`${API_URL}/admin/usuarios`, {
-                    headers: { 'x-admin-key': adminPass } // Enviamos la clave
+                    headers: { 'x-admin-key': adminPass } 
                 });
 
                 if (!res.ok) throw new Error("No autorizado");
@@ -145,18 +145,27 @@
         }
 
         async function deleteComm(id) {
-            const password = prompt("Clave de administrador:");
-            if (!password) return;
+            if (!confirm(`¿Estás seguro de que deseas eliminar el comentario con ID: ${id}?`)) return;
 
-            if (confirm('¿Borrar comentario?')) {
-                try {
-                    const response = await fetch(`${API_URL}/comentarios/${id}`, {
-                        method: 'DELETE',
-                        headers: { 'x-admin-key': password }
-                    });
-                    if (response.ok) { alert("Eliminado"); loadComments(); }
-                    else { alert("Error de clave o servidor"); }
-                } catch (error) { alert("Error de conexión"); }
+            try {
+                const res = await fetch(`${API_URL}/comentarios/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'x-admin-key': adminPass 
+                    }
+                });
+
+                if (res.ok) {
+                    alert('Comentario eliminado con éxito');
+                    loadComments(); 
+                } else if (res.status === 401) {
+                    alert('Error: Sesión no autorizada o clave incorrecta.');
+                } else {
+                    alert('Error al intentar eliminar el comentario.');
+                }
+            } catch (err) {
+                console.error("Error en deleteComm:", err);
+                alert('No se pudo conectar con el servidor.');
             }
         }
 
