@@ -674,6 +674,57 @@
                 transform: translateY(0);
             }
         }
+
+        /* --- AJUSTES PARA CELULARES (RESPONSIVE) --- */
+        @media (max-width: 500px) {
+
+            /* 1. Ajuste del Modal para que use más espacio lateral */
+            .modal-content {
+                padding: 20px 15px !important;
+                /* Menos espacio interno para que quepa más texto */
+                width: 95% !important;
+            }
+
+            /* 2. Ajuste de los comentarios (Lista) */
+            .comment-item {
+                padding: 12px !important;
+                gap: 10px !important;
+            }
+
+            .comment-header {
+                flex-direction: column;
+                /* Nombre arriba, fecha abajo */
+                align-items: flex-start !important;
+                gap: 4px;
+            }
+
+            .comment-date {
+                align-self: flex-end;
+                /* Mueve la fecha a la esquina inferior derecha del encabezado */
+                font-size: 0.7rem !important;
+            }
+
+            .comment-author {
+                font-size: 0.85rem !important;
+                line-height: 1.2;
+            }
+
+            /* 3. Ajuste del formulario de envío */
+            .comment-input-name {
+                font-size: 0.8rem !important;
+                /* Texto más pequeño para que no se corte el ID */
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                /* Si el nombre es muy largo, pone "..." en lugar de romperse */
+            }
+
+            .btn-send-comment {
+                width: 100%;
+                /* Botón grande para que sea fácil tocarlo con el dedo */
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 
@@ -1069,20 +1120,22 @@
                     const nombreSinId = partes[0];
                     const idVisual = partes[1] ? `#${partes[1]}` : '';
 
+                    // Busca esta parte dentro de list.innerHTML = comentarios.map(c => { ... })
                     return `
-                <div class="comment-item">
-                    <div class="comment-avatar">${inicial}</div>
-                    <div class="comment-content">
-                        <div class="comment-header">
-                            <span class="comment-author">
-                                ${nombreSinId}<small style="color: var(--primary); opacity: 0.5; font-size: 0.7rem; margin-left: 5px;">${idVisual}</small>
-                            </span>
-                            <span class="comment-date">${new Date(c.fecha).toLocaleDateString()}</span>
-                        </div>
-                        <p class="comment-text">${c.contenido}</p>
-                    </div>
+    <div class="comment-item">
+        <div class="comment-avatar">${inicial}</div>
+        <div class="comment-content">
+            <div class="comment-header">
+                <div style="display: flex; flex-direction: column;">
+                    <span class="comment-author" style="font-size: 0.9rem;">${nombreSinId}</span>
+                    <small style="color: var(--primary); opacity: 0.7; font-size: 0.75rem;">${idVisual}</small>
                 </div>
-            `;
+                <span class="comment-date">${new Date(c.fecha).toLocaleDateString()}</span>
+            </div>
+            <p class="comment-text" style="margin-top: 5px;">${c.contenido}</p>
+        </div>
+    </div>
+`;
                 }).join('');
             } catch (error) {
                 console.error("Error al cargar:", error);
