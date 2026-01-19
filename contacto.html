@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contacto | MenteSana</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -526,33 +527,82 @@
     </footer>
 
     <script>
-
         const API_URL = 'https://mente-sana-frontend.onrender.com';
 
+        // --- 1. GESTIÓN DE ADMIN (Persistente y Segura) ---
+        let isAdmin = new URLSearchParams(window.location.search).get('admin') === 'mente123';
 
-        const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'mente123';
+        if (isAdmin) {
+            localStorage.setItem('adminMenteSana', 'true');
+        } else {
+            isAdmin = localStorage.getItem('adminMenteSana') === 'true';
+        }
 
         // --- MENÚ HAMBURGUESA ---
         const hamburger = document.querySelector(".hamburger");
         const navMenu = document.querySelector(".nav-menu");
-        hamburger.addEventListener("click", () => {
-            hamburger.classList.toggle("active");
-            navMenu.classList.toggle("active");
-        });
+        if (hamburger) {
+            hamburger.addEventListener("click", () => {
+                hamburger.classList.toggle("active");
+                navMenu.classList.toggle("active");
+            });
+        }
 
         const contactForm = document.getElementById('contactForm');
         const commentsContainer = document.getElementById('commentsContainer');
 
+        // --- CARGA INICIAL ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCommentsFromDB();
+            verificarIdentidad();
 
-        document.addEventListener('DOMContentLoaded', loadCommentsFromDB);
+            if (isAdmin) {
+                configurarModoAdmin();
+            }
+        });
 
+        function configurarModoAdmin() {
+            const formHeader = document.querySelector('.contact-container h2');
+            if (formHeader) {
+                formHeader.innerHTML = 'Enviar mensaje como <span style="color:#1abc9c;">Administrador</span>';
+                // Botón para salir del modo admin (útil para pruebas)
+                const logoutBtn = document.createElement('button');
+                logoutBtn.innerHTML = "Cerrar sesión admin";
+                logoutBtn.style = "font-size:10px; margin-left:10px; cursor:pointer; background:none; border:1px solid #ccc; border-radius:10px; color:#666;";
+                logoutBtn.onclick = () => { localStorage.removeItem('adminMenteSana'); location.reload(); };
+                formHeader.appendChild(logoutBtn);
+            }
 
+            const inputNombre = document.getElementById('name');
+            if (inputNombre && inputNombre.parentElement) {
+                inputNombre.parentElement.style.display = 'none';
+            }
+        }
+
+        function verificarIdentidad() {
+            if (isAdmin) return;
+            const nombreGuardado = localStorage.getItem('usuarioMenteSana');
+            const rolGuardado = localStorage.getItem('rolMenteSana');
+            const inputNombre = document.getElementById('name');
+
+            if (inputNombre && nombreGuardado) {
+                inputNombre.value = (rolGuardado === 'Estudiante') ? nombreGuardado : `${nombreGuardado} (Invitado)`;
+                inputNombre.readOnly = true;
+                inputNombre.style.backgroundColor = "#f0f0f0";
+            }
+        }
+
+        // --- ENVIAR COMENTARIO (Corrección del error de envío) ---
         contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.querySelector('.btn-submit');
-            const nameInput = document.getElementById('name');
-            const name = isAdmin ? "✅ Verificador MenteSana" : (nameInput.value || "Visitante");
-            const text = document.getElementById('comment').value;
+            const textElement = document.getElementById('comment');
+            const text = textElement.value.trim();
+
+            if (!text) return alert("Escribe un mensaje antes de publicar.");
+
+            // Usamos un nombre sin caracteres especiales para la base de datos
+            let nombreFinal = isAdmin ? "Verificador MenteSana" : (document.getElementById('name').value || "Visitante");
 
             btn.textContent = "Publicando...";
             btn.disabled = true;
@@ -563,138 +613,141 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         lectura_id: 'contacto',
-                        nombre: name,
+                        nombre: nombreFinal,
                         contenido: text
                     })
                 });
 
                 if (response.ok) {
-                    contactForm.reset();
+                    textElement.value = '';
                     await loadCommentsFromDB();
                 } else {
-                    const errorData = await response.json();
-                    alert(errorData.error || "Error al publicar.");
+                    const errData = await response.json();
+                    alert("Error del servidor: " + (errData.error || "No se pudo publicar"));
                 }
             } catch (error) {
                 console.error("Error:", error);
-                alert("No se pudo conectar con el servidor.");
+                alert("Error de conexión. Revisa si el servidor está activo.");
             } finally {
                 btn.textContent = "Publicar Comentario";
                 btn.disabled = false;
             }
         });
 
-
+        // --- CARGAR COMENTARIOS (Optimizado) ---
         async function loadCommentsFromDB() {
             try {
                 const response = await fetch(`${API_URL}/comentarios/contacto`);
+                if (!response.ok) throw new Error("Error al obtener comentarios");
+
                 const allComments = await response.json();
                 commentsContainer.innerHTML = '';
 
-                if (allComments.length === 0) {
-                    commentsContainer.innerHTML = '<p style="text-align:center; color:#999;">Sé el primero en escribir algo...</p>';
+                if (!allComments || allComments.length === 0) {
+                    commentsContainer.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">No hay mensajes aún. ¡Sé el primero!</p>';
                     return;
                 }
 
+                // Separar principales de respuestas
                 const principales = allComments.filter(c => !c.contenido.trim().startsWith('@'));
                 const respuestas = allComments.filter(c => c.contenido.trim().startsWith('@'));
 
                 principales.forEach(parent => {
                     const threadWrapper = document.createElement('div');
                     threadWrapper.className = 'comment-thread';
-
+                    threadWrapper.style.marginBottom = "20px";
                     threadWrapper.innerHTML = generateCommentHTML(parent, false);
 
-                    const susRespuestas = respuestas.filter(r => r.contenido.includes(`@${parent.nombre}`));
+                    // Buscamos respuestas que mencionen al autor (con o sin emoji)
+                    const susRespuestas = respuestas.filter(r => {
+                        const nombreLimpio = parent.nombre.replace("✅ ", "");
+                        return r.contenido.includes(`@${parent.nombre}`) || r.contenido.includes(`@${nombreLimpio}`);
+                    });
 
                     if (susRespuestas.length > 0) {
                         const repliesDiv = document.createElement('div');
                         repliesDiv.className = 'replies-container';
+                        repliesDiv.style.marginLeft = "30px";
+                        repliesDiv.style.borderLeft = "2px solid #ddd";
+                        repliesDiv.style.paddingLeft = "15px";
+
                         susRespuestas.forEach(reply => {
                             repliesDiv.innerHTML += generateCommentHTML(reply, true);
                         });
                         threadWrapper.appendChild(repliesDiv);
                     }
-
                     commentsContainer.appendChild(threadWrapper);
                 });
-
             } catch (error) {
                 console.error("Error:", error);
-                commentsContainer.innerHTML = '<p style="color:red; text-align:center;">Error al cargar el muro.</p>';
+                commentsContainer.innerHTML = '<p style="color:red; text-align:center;">No se pudieron cargar los mensajes.</p>';
             }
         }
 
+        // --- GENERAR HTML (Mejora visual) ---
         function generateCommentHTML(comment, isReply) {
-            const dateStr = new Date(comment.fecha).toLocaleString();
-            const esAdmin = comment.nombre.includes("Verificador");
+            const fecha = new Date(comment.fecha);
+            const dateStr = fecha.toLocaleDateString() + ' ' + fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            // Detectamos si es oficial (independientemente de si viene con el icono desde la DB)
+            const esOficial = comment.nombre.toLowerCase().includes("verificador");
+            const nombreMostrar = esOficial ? "Verificador MenteSana" : comment.nombre;
 
             const contenidoMostrar = isReply ? comment.contenido.split(' ').slice(1).join(' ') : comment.contenido;
+            const claseCard = esOficial ? 'comment-item comentario-oficial' : (isReply ? 'reply-item' : 'comment-item');
 
-            const claseCard = esAdmin ? 'comment-item comentario-oficial' : (isReply ? 'reply-item' : 'comment-item');
+            const icono = esOficial ? '<i class="fas fa-user-shield" style="color:#1abc9c"></i>' : '<i class="fas fa-user-circle"></i>';
 
             return `
-        <div class="${claseCard}">
-            <strong>${esAdmin ? '🛡️' : '👤'} ${comment.nombre} 
-                ${esAdmin ? '<span style="font-size:0.6rem; background:#1abc9c; color:white; padding:2px 6px; border-radius:4px; margin-left:5px;">EQUIPO</span>' : ''}
-            </strong>
-            <small>${dateStr}</small>
-            <p>${contenidoMostrar}</p>
-            <div class="btn-action-group">
-                ${!isReply ? `<button class="btn-reply-action" onclick="prepareReply('${comment.nombre}')">💬 Responder</button>` : ''}
-                ${isAdmin ? `<button class="btn-reply-action btn-delete-action" onclick="deleteComment(${comment.id})">🗑 Eliminar</button>` : ''}
-            </div>
-        </div>
-    `;
+            <div class="${claseCard}" style="background:${esOficial ? '#f0fdfa' : (isReply ? '#fff' : '#fff')}; border-radius:15px; padding:15px; margin-top:10px; border:1px solid ${esOficial ? '#1abc9c' : '#eee'}; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <strong>${icono} ${nombreMostrar} 
+                        ${esOficial ? '<span style="font-size:0.6rem; background:#1abc9c; color:white; padding:2px 6px; border-radius:4px; margin-left:5px;">EQUIPO</span>' : ''}
+                    </strong>
+                    <small style="color:#999; font-size:0.75rem;">${dateStr}</small>
+                </div>
+                <p style="color:#444; margin-bottom:10px;">${contenidoMostrar}</p>
+                <div class="btn-action-group" style="display:flex; gap:10px;">
+                    ${!isReply ? `<button class="btn-reply-action" onclick="prepareReply('${nombreMostrar}')" style="border:none; background:none; color:#1abc9c; cursor:pointer; font-size:0.85rem;"><i class="fas fa-reply"></i> Responder</button>` : ''}
+                    ${isAdmin ? `<button class="btn-delete-action" onclick="deleteComment(${comment.id})" style="border:none; background:none; color:#e74c3c; cursor:pointer; font-size:0.85rem;"><i class="fas fa-trash-alt"></i> Eliminar</button>` : ''}
+                </div>
+            </div>`;
         }
 
-        function prepareReply(user) {
+        // --- FUNCIONES GLOBALES ---
+        window.prepareReply = function (user) {
             const txt = document.getElementById('comment');
             txt.value = `@${user} `;
             txt.focus();
             window.scrollTo({ top: contactForm.offsetTop - 100, behavior: 'smooth' });
-        }
-
-
-        async function deleteComment(id) {
-            const password = prompt("Ingresa la clave de seguridad para eliminar:");
-            if (password !== "DoloresSucre2024") {
-                alert("Clave incorrecta.");
-                return;
-            }
-
-            if (!confirm("¿Confirmas que deseas eliminar este mensaje?")) return;
-
-            try {
-                const response = await fetch(`${API_URL}/comentarios/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'x-admin-key': 'DoloresSucre2024' }
-                });
-
-                if (response.ok) {
-                    await loadCommentsFromDB();
-                } else {
-                    alert("Error al eliminar.");
-                }
-            } catch (error) {
-                console.error("Error:", error);
-            }
-        }
-
-        window.deleteComment = deleteComment;
-
-        // --- BARRA DE PROGRESO ---
-        window.onscroll = function () {
-            const barra = document.getElementById("progreso-barra");
-            const alturaPagina = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            const progreso = (window.scrollY / alturaPagina) * 100;
-            if (barra) barra.style.width = progreso + "%";
         };
 
-        if (isAdmin) {
-            const campoNombre = document.querySelector('.form-group:has(#name)');
-            if (campoNombre) campoNombre.style.display = 'none';
-        }
+        window.deleteComment = async function (id) {
+            const password = prompt("Clave de eliminación:");
+            if (password !== "DoloresSucre2024") return alert("Clave incorrecta.");
+
+            if (confirm("¿Seguro que quieres eliminar este comentario?")) {
+                try {
+                    const response = await fetch(`${API_URL}/comentarios/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'x-admin-key': password }
+                    });
+                    if (response.ok) {
+                        loadCommentsFromDB();
+                    } else {
+                        alert("No se pudo eliminar.");
+                    }
+                } catch (e) { console.error(e); }
+            }
+        };
+
+        window.onscroll = function () {
+            const barra = document.getElementById("progreso-barra");
+            if (barra) {
+                const progreso = (window.scrollY / (document.documentElement.scrollHeight - document.documentElement.clientHeight)) * 100;
+                barra.style.width = progreso + "%";
+            }
+        };
     </script>
 </body>
 
