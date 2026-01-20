@@ -685,6 +685,32 @@
                 gap: 15px;
             }
         }
+
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            background: rgba(26, 188, 156, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            transition: all 0.3s ease;
+        }
+
+        .icon-circle i {
+            font-size: 2rem;
+            color: #1abc9c;
+        }
+
+        .type-card:hover .icon-circle {
+            background: #1abc9c;
+            transform: scale(1.1);
+        }
+
+        .type-card:hover .icon-circle i {
+            color: white;
+        }
     </style>
 </head>
 
@@ -731,21 +757,27 @@
 
         <section class="expression-types">
             <div class="type-card card-theater">
-                <div class="icon-circle">🎭</div>
+                <div class="icon-circle">
+                    <i class="fa-solid fa-masks-theater"></i>
+                </div>
                 <h3>Teatro y Dramatización</h3>
                 <p>Permite "encarnar" diferentes realidades y emociones, ofreciendo un espacio seguro para practicar la
                     empatía y la expresión verbal y corporal.</p>
             </div>
 
             <div class="type-card card-art">
-                <div class="icon-circle">🎨</div>
+                <div class="icon-circle">
+                    <i class="fa-solid fa-palette"></i>
+                </div>
                 <h3>Arte y Pintura</h3>
                 <p>Da forma y color a sentimientos que a veces son inexpresables con palabras. Es un refugio creativo
                     para canalizar la ansiedad.</p>
             </div>
 
             <div class="type-card card-sport">
-                <div class="icon-circle">⚽</div>
+                <div class="icon-circle">
+                    <i class="fa-solid fa-volleyball"></i>
+                </div>
                 <h3>Deporte y Movimiento</h3>
                 <p>Canaliza la energía acumulada, libera endorfinas naturales y mejora el estado de ánimo mientras
                     conectas con tus compañeros.</p>
