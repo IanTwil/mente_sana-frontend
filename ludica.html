@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expresión Lúdica | MenteSana</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* --- ESTILOS GENERALES --- */
         * {
@@ -477,6 +478,46 @@
                 height: 350px !important;
             }
         }
+
+        .control-btn:active {
+            transform: scale(0.9);
+            background: rgba(26, 188, 156, 0.5) !important;
+            color: white !important;
+        }
+
+        .game-info button:hover,
+        #fullscreen-btn:hover {
+            transform: scale(1.1);
+            background-color: #16a085 !important;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (max-width: 480px) {
+            .game-info {
+                padding: 10px !important;
+            }
+
+            .game-info h3 {
+                font-size: 1rem !important;
+                /* Título ligeramente más pequeño */
+            }
+
+            .game-info p {
+                display: none;
+                /* Ocultamos la descripción en móviles muy pequeños para dar prioridad al botón */
+            }
+
+            .btn-fullscreen-toggle {
+                width: 40px !important;
+                height: 40px !important;
+            }
+        }
+
+        /* Efecto visual táctil */
+        .btn-fullscreen-toggle:active {
+            transform: scale(0.9);
+            background-color: #16a085 !important;
+        }
     </style>
 </head>
 
@@ -589,21 +630,31 @@
                             </button>
                         </div>
 
-                        <div id="fullscreen-btn" onclick="toggleFullScreen()"
-                            style="position: absolute; bottom: 15px; right: 15px; pointer-events: auto; background: rgba(0,0,0,0.5); color: white; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 0.7rem; border: 1px solid #555;">
-                            ⛶ FULLSCREEN</div>
+                        <div id="fullscreen-btn" onclick="toggleFullScreen()" style="position: absolute; bottom: 15px; right: 15px; pointer-events: auto; 
+           background: rgba(26, 188, 156, 0.8); backdrop-filter: blur(4px); 
+           color: white; width: 40px; height: 40px; border-radius: 50%; 
+           display: flex; align-items: center; justify-content: center; 
+           cursor: pointer; border: 1px solid rgba(255,255,255,0.3); 
+           box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: all 0.2s;">
+                            <i class="fas fa-expand"></i>
+                        </div>
                     </div>
                     <div id="mobile-controls"
-                        style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 50; pointer-events: auto;">
+                        style="position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; z-index: 50; pointer-events: auto;">
                         <div class="control-btn" id="btn-left"
-                            style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 50%; font-size: 1.5rem; user-select: none;">
-                            ⬅️</div>
+                            style="background: rgba(255,255,255,0.15); backdrop-filter: blur(5px); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.3); color: white; transition: all 0.2s; user-select: none; -webkit-tap-highlight-color: transparent;">
+                            <i class="fas fa-chevron-left"></i>
+                        </div>
+
                         <div class="control-btn jump-btn" id="btn-jump"
-                            style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 50%; font-size: 1.5rem; user-select: none;">
-                            🦘</div>
+                            style="background: rgba(255,255,255,0.3); backdrop-filter: blur(5px); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #1abc9c; color: #1abc9c; font-size: 1.2rem; transition: all 0.2s; user-select: none; -webkit-tap-highlight-color: transparent;">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+
                         <div class="control-btn" id="btn-right"
-                            style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 50%; font-size: 1.5rem; user-select: none;">
-                            ➡️</div>
+                            style="background: rgba(255,255,255,0.15); backdrop-filter: blur(5px); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.3); color: white; transition: all 0.2s; user-select: none; -webkit-tap-highlight-color: transparent;">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
                     </div>
                 </div>
 
@@ -818,14 +869,17 @@
         <div class="games-container">
 
             <article class="game-card" id="juego1">
-                <div class="game-info">
-                    <div>
-                        <h3>🧩 Sopa de Letras</h3>
-                        <p>Encuentra palabras de resiliencia y bienestar.</p>
+                <div class="game-info"
+                    style="display: flex; justify-content: space-between; align-items: center; padding: 15px; gap: 10px;">
+                    <div style="flex: 1; min-width: 0;">
+                        <h3
+                            style="font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0;">
+                            🧩 Sopa de Letras</h3>
+                        <p style="font-size: 0.85rem; opacity: 0.8; margin: 5px 0 0 0;">Bienestar y resiliencia.</p>
                     </div>
-                    <button onclick="expandirJuego('juego1')"
-                        style="background: #1abc9c; border: none; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
-                        Full Screen ⛶
+                    <button onclick="expandirJuego('juego1')" class="btn-fullscreen-toggle"
+                        style="background: #1abc9c; border: none; color: white; width: 45px; height: 45px; border-radius: 12px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(26,188,156,0.2);">
+                        <i class="fas fa-maximize" style="font-size: 1.2rem;"></i>
                     </button>
                 </div>
                 <div class="iframe-wrapper">
@@ -840,9 +894,11 @@
                         <h3>🧠 Crucigrama Sanador</h3>
                         <p>Conceptos clave para el cuidado de tu mente.</p>
                     </div>
-                    <button onclick="expandirJuego('juego2')"
-                        style="background: #1abc9c; border: none; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
-                        Full Screen ⛶
+                    <button onclick="expandirJuego('juego2')" style="background: #1abc9c; border: none; color: white; 
+                   width: 45px; height: 45px; border-radius: 12px; 
+                   display: flex; align-items: center; justify-content: center; 
+                   cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 6px rgba(26, 188, 156, 0.2);">
+                        <i class="fas fa-maximize" style="font-size: 1.2rem;"></i>
                     </button>
                 </div>
                 <div class="iframe-wrapper">
@@ -857,9 +913,11 @@
                         <h3>Mitos y Verdades</h3>
                         <p>Desafía lo que crees saber sobre la violencia.</p>
                     </div>
-                    <button onclick="expandirJuego('juego3')"
-                        style="background: #1abc9c; border: none; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
-                        Full Screen ⛶
+                    <button onclick="expandirJuego('juego3')" style="background: #1abc9c; border: none; color: white; 
+                   width: 45px; height: 45px; border-radius: 12px; 
+                   display: flex; align-items: center; justify-content: center; 
+                   cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 6px rgba(26, 188, 156, 0.2);">
+                        <i class="fas fa-maximize" style="font-size: 1.2rem;"></i>
                     </button>
                 </div>
                 <div class="iframe-wrapper">
@@ -900,14 +958,69 @@
 
         function expandirJuego(id) {
             const juego = document.getElementById(id);
+
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+                return;
+            }
+
             if (juego.requestFullscreen) {
                 juego.requestFullscreen();
-            } else if (juego.webkitRequestFullscreen) { /* Safari */
+            } else if (juego.webkitRequestFullscreen) {
                 juego.webkitRequestFullscreen();
-            } else if (juego.msRequestFullscreen) { /* IE11 */
+            } else if (juego.msRequestFullscreen) {
                 juego.msRequestFullscreen();
             }
         }
+        document.addEventListener('fullscreenchange', actualizarIconosFullscreen);
+        document.addEventListener('webkitfullscreenchange', actualizarIconosFullscreen);
+
+        function actualizarIconosFullscreen() {
+            const botones = document.querySelectorAll('button onclick^="expandirJuego"], #fullscreen-btn');
+
+            botones.forEach(btn => {
+                const icono = btn.querySelector('i');
+                if (!icono) return;
+
+                if (document.fullscreenElement || document.webkitFullscreenElement) {
+                    icono.classList.remove('fa-expand', 'fa-maximize');
+                    icono.classList.add('fa-compress-arrows-alt');
+                } else {
+                    icono.classList.remove('fa-compress-arrows-alt');
+                    if (btn.id === 'fullscreen-btn') {
+                        icono.classList.add('fa-expand');
+                    } else {
+                        icono.classList.add('fa-maximize');
+                    }
+                }
+            });
+        }
+
+        function actualizarIconosUI() {
+            const isFS = document.fullscreenElement || document.webkitFullscreenElement;
+            const iconos = document.querySelectorAll('.btn-fullscreen-toggle i, #fullscreen-btn i');
+
+            iconos.forEach(icono => {
+                if (isFS) {
+                    icono.classList.replace('fa-maximize', 'fa-compress-arrows-alt');
+                    icono.classList.replace('fa-expand', 'fa-compress-arrows-alt');
+                } else {
+                    icono.classList.remove('fa-compress-arrows-alt');
+                    if (icono.closest('#fullscreen-btn')) {
+                        icono.classList.add('fa-expand');
+                    } else {
+                        icono.classList.add('fa-maximize');
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('fullscreenchange', actualizarIconosUI);
+        document.addEventListener('webkitfullscreenchange', actualizarIconosUI);
     </script>
 </body>
 
