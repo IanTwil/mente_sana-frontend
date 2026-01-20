@@ -499,12 +499,10 @@
 
             .game-info h3 {
                 font-size: 1rem !important;
-                /* Título ligeramente más pequeño */
             }
 
             .game-info p {
                 display: none;
-                /* Ocultamos la descripción en móviles muy pequeños para dar prioridad al botón */
             }
 
             .btn-fullscreen-toggle {
@@ -513,10 +511,35 @@
             }
         }
 
-        /* Efecto visual táctil */
         .btn-fullscreen-toggle:active {
             transform: scale(0.9);
             background-color: #16a085 !important;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translate(1px, 1px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+            }
+
+            30% {
+                transform: translate(3px, 2px) rotate(0deg);
+            }
+
+            50% {
+                transform: translate(-1px, 2px) rotate(1deg);
+            }
+
+            70% {
+                transform: translate(3px, 1px) rotate(-1deg);
+            }
+
+            100% {
+                transform: translate(1px, -2px) rotate(0deg);
+            }
         }
     </style>
 </head>
@@ -702,6 +725,16 @@
                         g.gain.setValueAtTime(0, now + (i * 0.1)); g.gain.linearRampToValueAtTime(0.1, now + (i * 0.1) + 0.1);
                         g.gain.linearRampToValueAtTime(0, now + 0.8); o.start(now + (i * 0.1)); o.stop(now + 0.9);
                     });
+                } else if (type === 'portalReady') {
+                    [200, 400, 600, 800].forEach((f, i) => {
+                        const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                        o.type = 'square'; o.frequency.value = f;
+                        o.connect(g); g.connect(audioCtx.destination);
+                        g.gain.setValueAtTime(0, now + (i * 0.05));
+                        g.gain.linearRampToValueAtTime(0.05, now + (i * 0.05) + 0.05);
+                        g.gain.linearRampToValueAtTime(0, now + 0.5);
+                        o.start(now + (i * 0.05)); o.stop(now + 0.5);
+                    });
                 }
             }
 
@@ -718,7 +751,7 @@
                 { x: 150, y: 310, gathered: false, msg: "¡Bien hecho! Reconocer tus sentimientos es el primer paso." },
                 { x: 380, y: 180, gathered: false, msg: "Pedir ayuda es de valientes. ¡Sigue subiendo!" },
                 { x: 680, y: 130, gathered: false, msg: "Cada pequeño esfuerzo cuenta. ¡Casi lo tienes!" },
-                { x: 750, y: 310, gathered: false, msg: "¡ENERGÍA REUNIDA! ¡VUELVE AL PORTAL DE INICIO!" }
+                { x: 750, y: 310, gathered: false, msg: "¡Excelente! No dejes ninguna partícula atrás." } // Mensaje neutral
             ];
             let platforms = [
                 { x: 0, y: 360, w: 800, h: 40 },
@@ -777,11 +810,25 @@
                 fragments.forEach(f => {
                     if (!f.gathered && player.x < f.x + 20 && player.x + player.w > f.x &&
                         player.y < f.y + 20 && player.y + player.h > f.y) {
-                        f.gathered = true; collectedCount++;
-                        playSfx('collect'); createExplosion(f.x + 10, f.y + 10, "#f1c40f");
-                        msgBox.innerText = f.msg;
+
+                        f.gathered = true;
+                        collectedCount++;
+                        playSfx('collect');
+                        createExplosion(f.x + 10, f.y + 10, "#f1c40f");
+
+                        if (collectedCount === fragments.length) {
+                            msgBox.innerText = "¡ENERGÍA TOTAL REUNIDA! ¡VUELVE AL PORTAL DE INICIO!";
+                            portal.active = true;
+
+                            playSfx('portalReady');
+
+                            canvas.style.animation = "shake 0.5s";
+                            setTimeout(() => { canvas.style.animation = ""; }, 500);
+                        } else {
+                            msgBox.innerText = f.msg;
+                        }
+
                         progressText.innerText = Math.round((collectedCount / fragments.length) * 100) + "%";
-                        if (collectedCount === fragments.length) portal.active = true;
                     }
                 });
 
@@ -806,9 +853,14 @@
 
                 if (portal.active) {
                     let pulse = Math.sin(Date.now() / 150) * 8;
-                    ctx.shadowBlur = 15 + pulse; ctx.shadowColor = "#1abc9c";
-                    ctx.fillStyle = "#1abc9c"; ctx.fillRect(portal.x, portal.y - pulse / 2, portal.w, portal.h + pulse);
-                    ctx.fillStyle = "white"; ctx.font = "bold 12px sans-serif"; ctx.fillText("META", portal.x + 12, portal.y - 10);
+                    ctx.shadowBlur = 20 + pulse;
+                    ctx.shadowColor = "#1abc9c";
+                    ctx.fillStyle = "#1abc9c";
+                    ctx.fillRect(portal.x, portal.y - pulse / 2, portal.w, portal.h + pulse);
+
+                    ctx.fillStyle = "white";
+                    ctx.font = "bold 14px sans-serif";
+                    ctx.fillText("¡AQUÍ!", portal.x + 10, portal.y - 25);
                 }
 
                 ctx.shadowBlur = 0; ctx.fillStyle = "#34495e";
