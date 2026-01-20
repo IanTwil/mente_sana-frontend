@@ -349,6 +349,8 @@
             height: 100%;
             background-color: rgba(26, 37, 47, 0.9);
             backdrop-filter: blur(8px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .p-modal-content {
@@ -361,10 +363,9 @@
             border-radius: 25px;
             position: relative;
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-            animation: slideIn 0.4s ease-out;
+            animation: slideIn 0.4s ease-out forwards;
         }
 
-        /* Animación de Entrada */
         @keyframes slideIn {
             from {
                 transform: translateY(30px);
@@ -377,7 +378,6 @@
             }
         }
 
-        /* Animación de Salida */
         @keyframes slideOut {
             from {
                 transform: translateY(0);
@@ -391,11 +391,9 @@
         }
 
         .p-modal-content {
-            /* ... tus otros estilos (background, padding, etc) ... */
             animation: slideIn 0.4s ease-out forwards;
         }
 
-        /* Clase que aplicaremos con JS para cerrar */
         .p-modal.closing {
             opacity: 0;
             transition: opacity 0.4s ease;
@@ -425,8 +423,9 @@
 
         @media (max-width: 600px) {
             .p-modal-content {
+                margin: 20px auto;
                 padding: 25px;
-                margin: 10% auto;
+                width: 95%;
             }
 
             div[style*="grid-template-columns: 1fr 1fr"] {
@@ -443,6 +442,13 @@
 
             footer div[style*="text-align: left"] {
                 text-align: center !important;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .p-modal-content div[style*="display: grid"] {
+                grid-template-columns: 1fr !important;
+                gap: 15px;
             }
         }
     </style>
@@ -657,26 +663,23 @@
 
         function openPurposeModal() {
             const modal = document.getElementById("purposeModal");
-            modal.classList.remove("closing"); // Limpiar clase por si acaso
+            modal.classList.remove("closing");
             modal.style.display = "block";
             document.body.style.overflow = "hidden";
         }
 
         function closePurposeModal() {
             const modal = document.getElementById("purposeModal");
-
-            // Añadimos la clase que activa la animación de salida
             modal.classList.add("closing");
 
-            // Esperamos 400ms (lo mismo que dura la animación en CSS) para ocultarlo
             setTimeout(() => {
                 modal.style.display = "none";
                 modal.classList.remove("closing");
                 document.body.style.overflow = "auto";
+                document.body.style.position = "";
             }, 400);
         }
 
-        // Actualizar también el cierre al hacer clic fuera
         window.onclick = function (event) {
             const modal = document.getElementById("purposeModal");
             if (event.target == modal) {

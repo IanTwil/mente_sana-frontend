@@ -82,6 +82,10 @@
             color: #1abc9c;
         }
 
+        .nav-link.active {
+            color: #1abc9c;
+        }
+
         .hamburger {
             display: none;
             cursor: pointer;
@@ -463,7 +467,6 @@
 
             .services-container {
                 grid-template-columns: 1fr;
-                /* Una columna en móvil */
                 padding: 10px;
             }
 
@@ -539,6 +542,8 @@
             height: 100%;
             background-color: rgba(26, 37, 47, 0.9);
             backdrop-filter: blur(8px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .p-modal-content {
@@ -551,10 +556,9 @@
             border-radius: 25px;
             position: relative;
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-            animation: slideIn 0.4s ease-out;
+            animation: slideIn 0.4s ease-out forwards;
         }
 
-        /* Animación de Entrada */
         @keyframes slideIn {
             from {
                 transform: translateY(30px);
@@ -612,8 +616,9 @@
 
         @media (max-width: 600px) {
             .p-modal-content {
+                margin: 20px auto;
                 padding: 25px;
-                margin: 10% auto;
+                width: 95%;
             }
 
             div[style*="grid-template-columns: 1fr 1fr"] {
@@ -632,6 +637,357 @@
                 text-align: center !important;
             }
         }
+
+        @media (max-width: 600px) {
+            .p-modal-content div[style*="display: grid"] {
+                grid-template-columns: 1fr !important;
+                gap: 15px;
+            }
+        }
+
+        #chat-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 3000;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        #chat-mascot {
+            width: 70px;
+            height: 70px;
+            background-color: #1abc9c;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.3s ease;
+            animation: floatMascot 3s ease-in-out infinite;
+        }
+
+        #chat-mascot:hover {
+            transform: scale(1.1);
+        }
+
+        .robot-body {
+            width: 40px;
+            height: 30px;
+            background: #2c3e50;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .robot-eye {
+            width: 8px;
+            height: 8px;
+            background: #1abc9c;
+            border-radius: 50%;
+            position: absolute;
+            top: 8px;
+            animation: blinkEyes 2s infinite;
+        }
+
+        .robot-eye.left {
+            left: 8px;
+        }
+
+        .robot-eye.right {
+            right: 8px;
+        }
+
+        .chat-bubble-hint {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: white;
+            color: #2c3e50;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            white-space: nowrap;
+        }
+
+        #chat-window {
+            display: none;
+            width: 320px;
+            height: 450px;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            flex-direction: column;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+            position: absolute;
+            bottom: 85px;
+            right: 0;
+            animation: slideUpChat 0.4s ease-out;
+        }
+
+        .chat-header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #f4f7f6;
+        }
+
+        .message {
+            padding: 10px 15px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            max-width: 85%;
+        }
+
+        .message.bot {
+            background: #e8f6f3;
+            color: #2c3e50;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+
+        .message.user {
+            background: #1abc9c;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            border: 1px solid #ddd;
+            padding: 8px;
+            border-radius: 20px;
+            outline: none;
+        }
+
+        #send-btn {
+            background: #1abc9c;
+            border: none;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        @keyframes floatMascot {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        @keyframes blinkEyes {
+
+            0%,
+            90%,
+            100% {
+                transform: scaleY(1);
+            }
+
+            95% {
+                transform: scaleY(0.1);
+            }
+        }
+
+        @keyframes slideUpChat {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            #chat-window {
+                width: 280px;
+                right: -10px;
+            }
+        }
+
+
+        .chat-options-wrapper {
+            background: white;
+            padding: 10px 0;
+            border-top: 1px solid #eee;
+        }
+
+        .chat-options-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            padding: 0 15px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+
+        .chat-options-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .opt-btn {
+            background: #e8f6f3;
+            border: 1px solid #1abc9c;
+            color: #2c3e50;
+            padding: 8px 15px;
+            border-radius: 20px;
+            white-space: nowrap;
+
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .opt-btn:hover {
+            background: #1abc9c;
+            color: white;
+        }
+
+        #chat-window {
+            height: 400px;
+
+        }
+
+        .robot-body.thinking {
+            animation: shake 0.5s ease-in-out infinite;
+        }
+
+        .robot-body.happy {
+            animation: jump 0.6s ease;
+        }
+
+        .robot-body.happy .robot-eye {
+            background: #fff;
+            box-shadow: 0 0 12px #fff;
+            height: 12px;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-2px) rotate(-3deg);
+            }
+
+            75% {
+                transform: translateX(2px) rotate(3deg);
+            }
+        }
+
+        @keyframes jump {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-25px) scale(1.1);
+            }
+        }
+
+        .robot-eye {
+            animation: blinkEyes 3s infinite;
+        }
+
+        @keyframes blinkEyes {
+
+            0%,
+            90%,
+            100% {
+                transform: scaleY(1);
+            }
+
+            95% {
+                transform: scaleY(0.1);
+            }
+        }
+
+        .robot-eye {
+            background: #1abc9c;
+            transition: all 0.3s ease;
+        }
+
+        .robot-body.empathy .robot-eye {
+            background: #e74c3c;
+            box-shadow: 0 0 10px #e74c3c;
+        }
+
+        .robot-body.happy .robot-eye {
+            background: #2ecc71;
+            box-shadow: 0 0 12px #2ecc71;
+        }
+
+
+        .bar-group {
+            margin-bottom: 25px;
+        }
+
+        .bar-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            color: #34495e;
+        }
+
+        .bar-background {
+            background: #ecf0f1;
+            height: 12px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 0;
+            border-radius: 10px;
+            transition: width 1.5s cubic-bezier(0.1, 0.42, 0.41, 1);
+        }
+
+        .bar-fill::after {
+            content: '';
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        }
     </style>
 </head>
 
@@ -642,7 +998,7 @@
             <a href="inicio.html" class="logo">Mente<span>Sana</span></a>
 
             <ul class="nav-menu">
-                <li class="nav-item"><a href="inicio.html" class="nav-link">Inicio</a></li>
+                <li class="nav-item"><a href="inicio.html" class="nav-link active">Inicio</a></li>
                 <li class="nav-item"><a href="causas.html" class="nav-link">Causas</a></li>
                 <li class="nav-item"><a href="sintomas.html" class="nav-link">Síntomas</a></li>
                 <li class="nav-item"><a href="ayuda.html" class="nav-link">Ayuda Emocional</a></li>
@@ -683,6 +1039,47 @@
                         style="max-width: 100%; height: 400px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                 </div>
             </article>
+        </section>
+
+        <section class="stats-section" style="padding: 60px 20px; background: #fff;">
+            <div style="max-width: 800px; margin: 0 auto;">
+                <h2 style="color: #2c3e50; text-align: center; margin-bottom: 10px;">Impacto en la Salud Mental</h2>
+                <p style="text-align: center; color: #7f8c8d; margin-bottom: 40px;">Porcentaje estimado de estrés y
+                    depresión en estudiantes de último año (2025-2026)</p>
+
+                <div class="chart-container">
+                    <div class="bar-group">
+                        <div class="bar-info"><span>Nivel Mundial (Bachilleres)</span> <span>25%</span></div>
+                        <div class="bar-background">
+                            <div class="bar-fill" data-percent="25" style="background: #bdc3c7;"></div>
+                        </div>
+                    </div>
+
+                    <div class="bar-group">
+                        <div class="bar-info"><span>Ecuador (Nacional)</span> <span>32%</span></div>
+                        <div class="bar-background">
+                            <div class="bar-fill" data-percent="32" style="background: #95a5a6;"></div>
+                        </div>
+                    </div>
+
+                    <div class="bar-group">
+                        <div class="bar-info"><span>Colegios Fiscales (Guayaquil)</span> <span>45%</span></div>
+                        <div class="bar-background">
+                            <div class="bar-fill" data-percent="45" style="background: #34495e;"></div>
+                        </div>
+                    </div>
+
+                    <div class="bar-group">
+                        <div class="bar-info" style="color: #1abc9c; font-weight: bold;"><span>U.E.F. Dolores Sucre
+                                (3ero Bach.)</span> <span>52%</span></div>
+                        <div class="bar-background" style="border: 1px solid rgba(26, 188, 156, 0.3);">
+                            <div class="bar-fill" data-percent="52" style="background: #1abc9c;"></div>
+                        </div>
+                    </div>
+                </div>
+                <p style="font-size: 0.75rem; color: #bdc3c7; margin-top: 20px; text-align: center;">Datos basados en
+                    proyecciones académicas y encuestas de bienestar estudiantil locales.</p>
+            </div>
         </section>
 
         <section id="enfoque">
@@ -822,7 +1219,39 @@
             </div>
         </div>
     </div>
+    <div id="chat-container">
+        <div id="chat-mascot" onclick="toggleChat()">
+            <div class="robot-body">
+                <div class="robot-eye left"></div>
+                <div class="robot-eye right"></div>
+            </div>
+            <div class="chat-bubble-hint">¿Necesitas ayuda?</div>
+        </div>
 
+        <div id="chat-window">
+            <div class="chat-header">
+                <span>Asistente MenteSana</span>
+                <button onclick="toggleChat()"
+                    style="background:none; border:none; color:white; cursor:pointer; font-size:20px;">&times;</button>
+            </div>
+
+            <div id="chat-messages">
+                <div class="message bot">¡Hola! Soy tu compañero de apoyo. Elige una opción para empezar:</div>
+            </div>
+
+            <div class="chat-options-wrapper">
+                <div class="chat-options-container">
+                    <button class="opt-btn" onclick="handleOption('hola')">👋 Saludar</button>
+                    <button class="opt-btn" onclick="handleOption('estres')">😰 Estrés</button>
+                    <button class="opt-btn" onclick="handleOption('tristeza')">🫂 Tristeza</button>
+                    <button class="opt-btn" onclick="handleOption('ludica')">🎮 Jugar</button>
+                    <button class="opt-btn" onclick="handleOption('quienes')">👥 Equipo</button>
+                    <button class="opt-btn" onclick="handleOption('consejo')">💡 Consejo</button>
+                    <button class="opt-btn" onclick="handleOption('gracias')">✨ Gracias</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script>
         const hamburger = document.querySelector(".hamburger");
         const navMenu = document.querySelector(".nav-menu");
@@ -841,6 +1270,11 @@
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add("active");
+
+                    if (entry.target.classList.contains('bar-fill')) {
+                        const percentage = entry.target.getAttribute('data-percent');
+                        entry.target.style.width = percentage + '%';
+                    }
                 }
             });
         }, {
@@ -851,31 +1285,115 @@
             observer.observe(el);
         });
 
+        document.querySelectorAll('.bar-fill').forEach(bar => {
+            observer.observe(bar);
+        });
+
+        document.querySelectorAll('.reveal-intro-img, .reveal-gif').forEach(el => {
+            observer.observe(el);
+        });
+
         function openPurposeModal() {
             const modal = document.getElementById("purposeModal");
-            modal.classList.remove("closing"); 
+            modal.classList.remove("closing");
             modal.style.display = "block";
             document.body.style.overflow = "hidden";
         }
 
         function closePurposeModal() {
             const modal = document.getElementById("purposeModal");
-
             modal.classList.add("closing");
 
             setTimeout(() => {
                 modal.style.display = "none";
                 modal.classList.remove("closing");
                 document.body.style.overflow = "auto";
+                document.body.style.position = "";
             }, 400);
         }
 
-        // Actualizar también el cierre al hacer clic fuera
         window.onclick = function (event) {
             const modal = document.getElementById("purposeModal");
             if (event.target == modal) {
                 closePurposeModal();
             }
+        }
+
+        // Conocimiento y respuestas del Bot
+        const botKnowledge = {
+            'hola': "¡Hola! Soy tu asistente de MenteSana. Estoy aquí para escucharte y guiarte. ¿Qué te gustaría explorar hoy?",
+            'estres': "Es normal sentirse agobiado en 3ero. 🎓 Te recomiendo visitar **Ayuda Emocional** para aprender técnicas de relajación.",
+            'tristeza': "No estás solo. 🫂 Identificar tus emociones es el primer paso. ¿Has visto nuestra sección de **Síntomas**?",
+            'ludica': "¡Genial! La **Expresión Lúdica** libera tensiones. Revisa las actividades en el menú.",
+            'quienes': "Somos estudiantes de 3ero de Informática de la U.E.F. Dolores Sucre. 💻 ¡Un gusto saludarte!",
+            'consejo': "Consejo rápido: 💡 'Tu valor no depende de una calificación'. Respira profundo 3 veces ahora.",
+            'gracias': "¡De nada! Tu salud mental es lo más importante. ¡Estaré aquí si me necesitas!"
+        };
+
+        const randomGreetings = [
+            "¡Hola de nuevo! ¿En qué puedo apoyarte hoy? ✨",
+            "¡Qué alegría verte por aquí! ¿Cómo va todo? 😊",
+            "¡Hola! Soy tu robot guía, listo para escucharte. 🤖",
+            "¡Ey! Recuerda que hoy es un buen día para cuidar tu mente. 🧠"
+        ];
+
+        function toggleChat() {
+            const chatWindow = document.getElementById('chat-window');
+            const messagesContainer = document.getElementById('chat-messages');
+
+            if (chatWindow.style.display === 'flex') {
+                chatWindow.style.display = 'none';
+            } else {
+                chatWindow.style.display = 'flex';
+                document.querySelector('.chat-bubble-hint').style.display = 'none';
+
+                if (messagesContainer.children.length <= 1) {
+                    const randomGreet = randomGreetings[Math.floor(Math.random() * randomGreetings.length)];
+                    setTimeout(() => {
+                        const greetDiv = document.createElement('div');
+                        greetDiv.className = 'message bot';
+                        greetDiv.textContent = randomGreet;
+                        messagesContainer.appendChild(greetDiv);
+                    }, 500);
+                }
+            }
+        }
+
+        function handleOption(optionKey) {
+            const container = document.getElementById('chat-messages');
+            const robot = document.querySelector('.robot-body');
+
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user';
+            const buttonText = document.querySelector(`[onclick="handleOption('${optionKey}')"]`).textContent;
+            userMsg.textContent = buttonText;
+            container.appendChild(userMsg);
+
+            robot.classList.remove('happy', 'empathy');
+            robot.classList.add('thinking');
+            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+
+            // 2. Respuesta del Bot
+            setTimeout(() => {
+                robot.classList.remove('thinking');
+
+                if (optionKey === 'estres' || optionKey === 'tristeza') {
+                    robot.classList.add('empathy');
+                } else {
+                    robot.classList.add('happy');
+                }
+
+                const botDiv = document.createElement('div');
+                botDiv.className = 'message bot';
+                botDiv.innerHTML = botKnowledge[optionKey];
+                container.appendChild(botDiv);
+
+                container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+
+                setTimeout(() => {
+                    robot.classList.remove('happy', 'empathy');
+                }, 2500);
+            }, 800);
         }
     </script>
 
