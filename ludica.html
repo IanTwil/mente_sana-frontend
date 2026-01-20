@@ -957,11 +957,11 @@
 
                 // --- AJUSTE DE SALTO ---
                 if ((keys["ArrowUp"] || keys["Space"]) && !player.jumping) {
-                    player.velY = -16; // Incrementado de -14 a -16 para más altura
+                    player.velY = -16; 
                     player.jumping = true;
                     playSfx('jump');
                 }
-                player.velY += 0.7; // Suavizado de 0.8 a 0.7 para mayor tiempo en el aire
+                player.velY += 0.7; 
                 player.y += player.velY;
 
                 if (player.y > 400) { player.y = 300; player.velY = 0; player.x = 50; }
