@@ -446,8 +446,6 @@
             opacity: 0.3;
         }
 
-        /* --- DISEÑO DE COMENTARIOS --- */
-
 
         #canvas-particles {
             position: fixed;
@@ -461,7 +459,6 @@
 
         body {
             background-color: transparent;
-            /* Dejamos ver el canvas */
             color: #ecf0f1;
         }
 
@@ -517,13 +514,10 @@
         }
 
 
-        /* Esta clase la pondrá el JavaScript automáticamente */
         .blog-img.loaded {
             opacity: 1 !important;
         }
 
-        /* --- MEJORA DE LA SECCIÓN DE COMENTARIOS --- */
-        /* --- SECCIÓN DE COMENTARIOS (UNIFICADA Y LIMPIA) --- */
         .comment-section {
             margin-top: 50px;
             padding: 30px;
@@ -552,7 +546,6 @@
             gap: 15px;
         }
 
-        /* Mejora de los campos de entrada para máxima legibilidad */
         .comment-input-name,
         .comment-input-text {
             width: 100%;
@@ -560,16 +553,13 @@
             border: 2px solid transparent;
             padding: 12px 15px;
             background: rgba(255, 255, 255, 0.95);
-            /* Fondo casi blanco para ver bien el texto */
             color: #2c3e50;
-            /* Texto oscuro para contraste profesional */
             font-family: inherit;
             font-size: 0.95rem;
             transition: 0.3s;
             outline: none;
         }
 
-        /* Estado de foco: resalta el campo que estás usando */
         .comment-input-name:focus,
         .comment-input-text:focus {
             background: #ffffff;
@@ -577,7 +567,6 @@
             box-shadow: 0 0 12px rgba(26, 188, 156, 0.3);
         }
 
-        /* Estilo para cuando el nombre está bloqueado (Estudiantes) */
         .comment-input-name[readonly] {
             background: rgba(255, 255, 255, 0.1);
             color: var(--primary);
@@ -603,7 +592,6 @@
             align-items: center;
             gap: 8px;
             align-self: flex-end;
-            /* Lo alinea a la derecha */
         }
 
         .btn-send-comment:hover {
@@ -611,7 +599,6 @@
             box-shadow: 0 5px 15px rgba(26, 188, 156, 0.4);
         }
 
-        /* --- LISTADO DE COMENTARIOS PUBLICADOS --- */
         .comment-item {
             background: rgba(255, 255, 255, 0.05);
             padding: 20px;
@@ -675,17 +662,13 @@
             }
         }
 
-        /* --- AJUSTES PARA CELULARES (RESPONSIVE) --- */
         @media (max-width: 500px) {
 
-            /* 1. Ajuste del Modal para que use más espacio lateral */
             .modal-content {
                 padding: 20px 15px !important;
-                /* Menos espacio interno para que quepa más texto */
                 width: 95% !important;
             }
 
-            /* 2. Ajuste de los comentarios (Lista) */
             .comment-item {
                 padding: 12px !important;
                 gap: 10px !important;
@@ -693,14 +676,12 @@
 
             .comment-header {
                 flex-direction: column;
-                /* Nombre arriba, fecha abajo */
                 align-items: flex-start !important;
                 gap: 4px;
             }
 
             .comment-date {
                 align-self: flex-end;
-                /* Mueve la fecha a la esquina inferior derecha del encabezado */
                 font-size: 0.7rem !important;
             }
 
@@ -709,19 +690,15 @@
                 line-height: 1.2;
             }
 
-            /* 3. Ajuste del formulario de envío */
             .comment-input-name {
                 font-size: 0.8rem !important;
-                /* Texto más pequeño para que no se corte el ID */
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
-                /* Si el nombre es muy largo, pone "..." en lugar de romperse */
             }
 
             .btn-send-comment {
                 width: 100%;
-                /* Botón grande para que sea fácil tocarlo con el dedo */
                 justify-content: center;
             }
         }
@@ -851,14 +828,12 @@
     </footer>
 
     <script>
-        // 1. Configuración Base
         const API_URL = "https://mente-sana-frontend.onrender.com";
 
         // Recuperar datos de sesión
         const usuarioLogueado = localStorage.getItem('usuarioMenteSana') || "";
         const rolUsuario = localStorage.getItem('rolMenteSana') || "Invitado";
 
-        // 2. Navegación Mobile
         const hamburger = document.querySelector(".hamburger");
         const navMenu = document.querySelector(".nav-menu");
 
@@ -867,7 +842,6 @@
             navMenu.classList.toggle("active");
         });
 
-        // 3. Marcar enlace activo
         function setActiveLink() {
             const currentPath = window.location.pathname.split("/").pop();
             const navLinks = document.querySelectorAll('.nav-link');
@@ -881,7 +855,6 @@
         }
         window.onload = setActiveLink;
 
-        // 4. Base de datos de lecturas (abreviada para el ejemplo, mantén la tuya completa)
         const lecturas = {
             'respiracion': {
                 titulo: 'Respiración Consciente: El Interruptor del Calma',
@@ -998,12 +971,10 @@
             const data = lecturas[id];
             const overlay = document.getElementById('modalOverlay');
 
-            // Recuperar datos de sesión y generar identidad
             const usuarioLogueado = localStorage.getItem('usuarioMenteSana') || "Invitado";
             const rolUsuario = localStorage.getItem('rolMenteSana') || "Visitante";
             const idUsuario = obtenerIdUsuario();
 
-            // Formato: Nombre (Rol) #ID
             const identidadVerificada = `${usuarioLogueado} (${rolUsuario}) #${idUsuario}`;
 
             const htmlComentarios = `
@@ -1111,12 +1082,10 @@
                 list.innerHTML = comentarios.map(c => {
                     const inicial = c.nombre ? c.nombre.charAt(0).toUpperCase() : '?';
 
-                    // Separar el nombre del ID visualmente
                     const partes = c.nombre.split('#');
                     const nombreSinId = partes[0];
                     const idVisual = partes[1] ? `#${partes[1]}` : '';
 
-                    // Busca esta parte dentro de list.innerHTML = comentarios.map(c => { ... })
                     return `
     <div class="comment-item">
         <div class="comment-avatar">${inicial}</div>
@@ -1173,7 +1142,7 @@
             draw() {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
-                ctx.fillStyle = '#1abc9c'; // Color MenteSana (Turquesa)
+                ctx.fillStyle = '#1abc9c'; 
                 ctx.fill();
             }
             update() {
@@ -1185,7 +1154,6 @@
                     this.directionY = -this.directionY;
                 }
 
-                // Interacción con el mouse (efecto de rechazo suave o conexión)
                 let dx = mouse.x - this.x;
                 let dy = mouse.y - this.y;
                 let distance = Math.sqrt(dx * dx + dy * dy);
@@ -1213,17 +1181,15 @@
             }
         }
 
-        // 1. Reducimos la cantidad de partículas (dividiendo por un número mayor)
         function init() {
             particlesArray = [];
-            // Antes dividíamos por 9000, ahora por 15000 (menos partículas = más velocidad)
             let numberOfParticles = (canvas.height * canvas.width) / 15000;
 
             for (let i = 0; i < numberOfParticles; i++) {
-                let size = (Math.random() * 2) + 1; // Partículas un poco más pequeñas
+                let size = (Math.random() * 2) + 1; 
                 let x = Math.random() * innerWidth;
                 let y = Math.random() * innerHeight;
-                let directionX = (Math.random() * 1) - 0.5; // Movimiento más lento y suave
+                let directionX = (Math.random() * 1) - 0.5; 
                 let directionY = (Math.random() * 1) - 0.5;
                 let color = '#1abc9c';
 
@@ -1231,19 +1197,17 @@
             }
         }
 
-        // 2. Optimizamos la conexión (solo dibujar si están muy cerca)
         function connect() {
             for (let a = 0; a < particlesArray.length; a++) {
                 for (let b = a; b < particlesArray.length; b++) {
                     let dx = particlesArray[a].x - particlesArray[b].x;
                     let dy = particlesArray[a].y - particlesArray[b].y;
-                    let distance = dx * dx + dy * dy; // Usamos distancia al cuadrado (es más rápido que Math.sqrt)
+                    let distance = dx * dx + dy * dy; 
 
-                    // Solo conectamos si la distancia es pequeña
                     let maxDistance = (canvas.width / 10) * (canvas.height / 10);
                     if (distance < maxDistance) {
                         let opacity = 1 - (distance / maxDistance);
-                        ctx.strokeStyle = `rgba(26, 188, 156, ${opacity * 0.2})`; // Líneas más tenues
+                        ctx.strokeStyle = `rgba(26, 188, 156, ${opacity * 0.2})`; 
                         ctx.lineWidth = 1;
                         ctx.beginPath();
                         ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
@@ -1254,7 +1218,6 @@
             }
         }
 
-        // Bucle de animación
         function animate() {
             requestAnimationFrame(animate);
             ctx.clearRect(0, 0, innerWidth, innerHeight);
@@ -1265,7 +1228,6 @@
             connect();
         }
 
-        // Redimensionar si cambia la ventana
         window.addEventListener('resize', function () {
             canvas.width = innerWidth;
             canvas.height = innerHeight;
@@ -1273,7 +1235,6 @@
             init();
         });
 
-        // Arrancar
         init();
         animate();
 
@@ -1304,7 +1265,6 @@
         document.addEventListener("DOMContentLoaded", function () {
             const lazyImages = document.querySelectorAll(".lazy-bg");
 
-            // Si el navegador soporta IntersectionObserver (Carga inteligente)
             if ("IntersectionObserver" in window) {
                 const observer = new IntersectionObserver((entries, observer) => {
                     entries.forEach(entry => {
@@ -1319,11 +1279,10 @@
                             observer.unobserve(div);
                         }
                     });
-                }, { rootMargin: "100px" }); // Empieza a cargar 100px antes de verla
+                }, { rootMargin: "100px" }); 
 
                 lazyImages.forEach(img => observer.observe(img));
             } else {
-                // Si el navegador es viejo, cargamos todo de golpe como antes
                 lazyImages.forEach(div => {
                     div.style.backgroundImage = `url('${div.getAttribute("data-bg")}')`;
                     div.classList.add("loaded");
