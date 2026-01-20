@@ -984,15 +984,11 @@
             }
         };
 
-        // --- LÓGICA DEL MODAL Y COMENTARIOS ---
 
-        // --- SISTEMA DE IDENTIDAD Y COMENTARIOS ---
-
-        // 1. Generar o recuperar el ID único de 4 dígitos para el usuario
         function obtenerIdUsuario() {
             let id = localStorage.getItem('idMenteSana');
             if (!id) {
-                id = Math.floor(1000 + Math.random() * 9000); // Genera un número entre 1000 y 9999
+                id = Math.floor(1000 + Math.random() * 9000); 
                 localStorage.setItem('idMenteSana', id);
             }
             return id;
