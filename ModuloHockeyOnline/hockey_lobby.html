@@ -435,22 +435,6 @@
             });
         }
 
-        function setupGame() {
-            document.getElementById('game-status').innerText = "PARTIDA EN CURSO";
-            conn.on('data', (data) => {
-                if (isHost) {
-                    p2.y = data.mouseY;
-                } else {
-                    p1.y = data.mouseY;
-                    ball.x = data.ballX || ball.x;
-                    ball.y = data.ballY || ball.y;
-                    p1.score = data.s1 !== undefined ? data.s1 : p1.score;
-                    p2.score = data.s2 !== undefined ? data.s2 : p2.score;
-                }
-            });
-            requestAnimationFrame(gameLoop);
-        }
-
         function handleInput(clientY) {
             const rect = canvas.getBoundingClientRect();
             const scaleY = canvas.height / rect.height;
@@ -587,7 +571,7 @@
                 ctx.fillStyle = "rgba(0,0,0,0.8)";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.font = "bold 60px Arial";
-                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary');
+                ctx.fillStyle = "#1abc9c";
                 ctx.textAlign = "center";
                 ctx.shadowBlur = 20; ctx.shadowColor = "white";
                 ctx.fillText(winnerText, 400, 250);
@@ -617,6 +601,7 @@
 
         function setupGame() {
             document.getElementById('game-status').innerText = "PARTIDA EN CURSO";
+
             conn.on('data', (data) => {
                 if (data.type === 'REMATCH_REQUEST') {
                     resetGameLogic();
@@ -634,6 +619,7 @@
                     if (p1.score >= 10 || p2.score >= 10) checkWinner();
                 }
             });
+
             requestAnimationFrame(gameLoop);
         }
     </script>
