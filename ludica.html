@@ -9,7 +9,6 @@
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2248%22 fill=%22%231abc9c%22/><path d=%22M50 25 L65 45 L50 65 L35 45 Z%22 fill=%22white%22/><path d=%22M25 60 Q50 85 75 60%22 stroke=%22white%22 stroke-width=%225%22 fill=%22none%22 stroke-linecap=%22round%22/></svg>">
     <style>
-        /* --- ESTILOS GENERALES --- */
         * {
             margin: 0;
             padding: 0;
@@ -35,7 +34,6 @@
             list-style: none;
         }
 
-        /* --- HEADER Y NAVEGACIÓN --- */
         header {
             background-color: #2c3e50;
             color: #ecf0f1;
@@ -81,7 +79,6 @@
             color: #1abc9c;
         }
 
-        /* ANIMACIÓN HAMBURGUESA */
         .hamburger {
             display: none;
             cursor: pointer;
@@ -215,7 +212,6 @@
             font-weight: 300;
         }
 
-        /* --- MAIN LAYOUT --- */
         main {
             flex: 1;
             max-width: 1100px;
@@ -385,7 +381,6 @@
             }
         }
 
-        /* --- FOOTER --- */
         footer {
             background-color: #2c3e50;
             color: #bdc3c7;
@@ -868,7 +863,12 @@
                     Flecha Arriba para saltar más alto.</p>
             </div>
         </section>
-
+        <section
+            style="text-align: center; margin-bottom: 3rem; background-color:#3498db; padding: 30px; border-radius: 15px; ">
+            <p style="font-weight: bold; color:#ebf5fb">¡Juega con tus amigos!</p>
+            <a href="HockeyOnlinehockey_lobby.html"
+                style="display: inline-block; margin-top: 15px; background-color:#f1c40f; color:#333; padding: 12px 25px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 10px rgba(164, 26, 188, 0.3);">Entrar</a>
+        </section>
         <script>
             // --- MOTOR DE AUDIO ---
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
