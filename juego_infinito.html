@@ -68,7 +68,6 @@
             backdrop-filter: blur(5px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             pointer-events: auto;
-            /* Habilita clicks */
             transition: opacity 0.3s;
         }
 
@@ -104,11 +103,16 @@
             pointer-events: none;
         }
 
-        /* --- NUEVAS IMPLEMENTACIONES --- */
-        .btn-regresar {
+        .nav-container {
             position: absolute;
             top: 20px;
             right: 20px;
+            display: flex;
+            gap: 15px;
+            z-index: 110;
+        }
+
+        .btn-nav {
             background: rgba(255, 255, 255, 0.1);
             color: white;
             padding: 10px 15px;
@@ -117,15 +121,17 @@
             font-size: 0.9rem;
             backdrop-filter: blur(5px);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            z-index: 100;
             transition: all 0.3s;
+            font-weight: bold;
+            pointer-events: auto;
+            touch-action: manipulation;
         }
 
-        .btn-regresar:hover {
+        .btn-nav:hover {
             background: #e74c3c;
+            transform: translateY(-2px);
         }
 
-        /* Área táctil para móviles (toda la pantalla salta) */
         #mobile-touch-area {
             position: absolute;
             top: 0;
@@ -133,7 +139,6 @@
             width: 100%;
             height: 100%;
             z-index: 5;
-            /* Por encima del canvas, debajo de la UI */
             display: none;
         }
 
@@ -154,7 +159,10 @@
         <div id="lives-display" style="position: absolute; top: 50px; left: 20px; font-size: 1.2rem; color: #ff7675;">
             Vidas: ❤️❤️❤️❤️❤️
         </div>
-        <a href="ludica.html" class="btn-regresar">Regresar</a>
+        <div class="nav-container">
+            <a href="hockey_lobby.html" class="btn-nav" onmouseenter="playSound('hover')">Hockey online</a>
+            <a href="ludica.html" class="btn-nav" onmouseenter="playSound('hover')">Regresar</a>
+        </div>
         <div id="mobile-touch-area"></div>
         <div id="start-screen" class="ui-layer">
             <div class="screen">
@@ -256,6 +264,14 @@
                     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
                     osc.start(now);
                     osc.stop(now + 0.3);
+                } else if (type === 'hover') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(1000, now + 0.05);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
                 }
             }
 
