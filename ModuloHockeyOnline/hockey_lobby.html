@@ -680,7 +680,10 @@
                     ball.y = data.ballY || ball.y;
                     p1.score = data.s1 !== undefined ? data.s1 : p1.score;
                     p2.score = data.s2 !== undefined ? data.s2 : p2.score;
-                    if (p1.score >= 10 || p2.score >= 10) checkWinner();
+
+                    if (p1.score >= 10 || p2.score >= 10) {
+                        checkWinner();
+                    }
                 }
             });
 
