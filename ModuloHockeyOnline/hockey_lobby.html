@@ -461,7 +461,6 @@
                 ball.x += ball.dx;
                 ball.y += ball.dy;
 
-
                 if (ball.y < 0 || ball.y > canvas.height) ball.dy *= -1;
 
                 // Colisión con Jugador 1
@@ -498,17 +497,19 @@
                     conn.send({ type: 'EFFECT', effectType: 'GOAL' });
                 }
 
-                if (!gameEnded) {
+                if (conn && conn.open) {
                     conn.send({
+                        type: 'STATE',
                         mouseY: p1.y,
                         ballX: ball.x,
                         ballY: ball.y,
                         s1: p1.score,
-                        s2: p2.score
+                        s2: p2.score,
+                        gameEnded: gameEnded,
+                        winnerText: winnerText
                     });
                 }
             }
-
 
             ballTrail.push({ x: ball.x, y: ball.y });
             if (ballTrail.length > 10) ballTrail.shift();
@@ -535,7 +536,8 @@
                 gameEnded = true;
                 winnerText = "¡JUGADOR 1 GANA!";
                 document.getElementById('btn-rematch').classList.remove('hidden');
-            } else if (p2.score >= 10) { 
+            }
+            if (p2.score >= 10) {
                 gameEnded = true;
                 winnerText = "¡JUGADOR 2 GANA!";
                 document.getElementById('btn-rematch').classList.remove('hidden');
@@ -660,6 +662,7 @@
                     return;
                 }
 
+                // Manejo de efectos sincrónicos
                 if (data.type === 'EFFECT') {
                     if (data.effectType === 'HIT') {
                         createParticles(data.x, data.y, data.color);
@@ -671,23 +674,44 @@
                     return;
                 }
 
-                if (isHost) {
-                    p2.y = data.mouseY;
-                } else {
-                    p1.y = data.mouseY;
-                    ball.x = data.ballX || ball.x;
-                    ball.y = data.ballY || ball.y;
-                    p1.score = data.s1 !== undefined ? data.s1 : p1.score;
-                    p2.score = data.s2 !== undefined ? data.s2 : p2.score;
+                if (data.type === 'STATE') {
+                    if (isHost) {
+                        if (data.mouseY !== undefined) p2.y = data.mouseY;
+                    } else {
+                        if (data.mouseY !== undefined) p1.y = data.mouseY;
+                        ball.x = data.ballX !== undefined ? data.ballX : ball.x;
+                        ball.y = data.ballY !== undefined ? data.ballY : ball.y;
+                        p1.score = data.s1 !== undefined ? data.s1 : p1.score;
+                        p2.score = data.s2 !== undefined ? data.s2 : p2.score;
 
-                    if (p1.score >= 10 || p2.score >= 10) {
-                        checkWinner();
+                        if (data.gameEnded) {
+                            gameEnded = true;
+                            winnerText = data.winnerText || (p1.score >= 10 ? "¡JUGADOR 1 GANA!" : "¡JUGADOR 2 GANA!");
+                            document.getElementById('btn-rematch').classList.remove('hidden');
+                        } else {
+                            if (p1.score >= 10 || p2.score >= 10) {
+                                checkWinner();
+                            }
+                        }
                     }
+                    return;
+                }
+
+                if (isHost) {
+                    if (data.mouseY !== undefined) p2.y = data.mouseY;
+                } else {
+                    if (data.mouseY !== undefined) p1.y = data.mouseY;
+                    if (data.ballX !== undefined) ball.x = data.ballX;
+                    if (data.ballY !== undefined) ball.y = data.ballY;
+                    if (data.s1 !== undefined) p1.score = data.s1;
+                    if (data.s2 !== undefined) p2.score = data.s2;
+                    if (p1.score >= 10 || p2.score >= 10) checkWinner();
                 }
             });
 
             requestAnimationFrame(gameLoop);
         }
+
     </script>
 </body>
 
