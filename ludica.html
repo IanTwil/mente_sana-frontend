@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expresión Lúdica | MenteSana</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231abc9c%22/><path d=%22M30 50 Q50 20 70 50 T30 50%22 fill=%22white%22/></svg>">
     <style>
         /* --- ESTILOS GENERALES --- */
         * {
@@ -919,7 +921,7 @@
                 { x: 150, y: 310, gathered: false, msg: "¡Bien hecho! Reconocer tus sentimientos es el primer paso." },
                 { x: 380, y: 180, gathered: false, msg: "Pedir ayuda es de valientes. ¡Sigue subiendo!" },
                 { x: 680, y: 130, gathered: false, msg: "Cada pequeño esfuerzo cuenta. ¡Casi lo tienes!" },
-                { x: 750, y: 310, gathered: false, msg: "¡Excelente! No dejes ninguna partícula atrás." } 
+                { x: 750, y: 310, gathered: false, msg: "¡Excelente! No dejes ninguna partícula atrás." }
             ];
             let platforms = [
                 { x: 0, y: 360, w: 800, h: 40 },
@@ -957,11 +959,11 @@
 
                 // --- AJUSTE DE SALTO ---
                 if ((keys["ArrowUp"] || keys["Space"]) && !player.jumping) {
-                    player.velY = -16; 
+                    player.velY = -16;
                     player.jumping = true;
                     playSfx('jump');
                 }
-                player.velY += 0.7; 
+                player.velY += 0.7;
                 player.y += player.velY;
 
                 if (player.y > 400) { player.y = 300; player.velY = 0; player.x = 50; }
@@ -1148,13 +1150,13 @@
 
         </div>
 
-        <section 
+        <section
             style="text-align: center; margin-bottom: 3rem; background-color:#f1c40f; padding: 30px; border-radius: 15px; ">
             <p>Juego Secreto ¿Quieres probarlo?</p>
             <a href="juego_infinito.html"
                 style="display: inline-block; margin-top: 15px; background-color: #bc1ab7; color: white; padding: 12px 25px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 10px rgba(164, 26, 188, 0.3);">Jugar</a>
         </section>
-        
+
         <section
             style="text-align: center; margin-bottom: 3rem; background-color: #ebf5fb; padding: 30px; border-radius: 15px; ">
             <p>¿Sientes que no es suficiente?</p>
