@@ -287,6 +287,8 @@
         let isHost = false;
         let rooms = [];
         let goalFlash = 0;
+        let shakeAmount = 0;
+        let ballTrail = [];
         const paddleW = 15, paddleH = 90;
         const p1 = { x: 20, y: 205, score: 0, color: '#1abc9c' };
         const p2 = { x: 765, y: 205, score: 0, color: '#e74c3c' };
@@ -455,35 +457,65 @@
 
         function update() {
             if (isHost && conn && conn.open) {
-                ball.x += ball.dx; ball.y += ball.dy;
+
+                ball.x += ball.dx;
+                ball.y += ball.dy;
+
+
                 if (ball.y < 0 || ball.y > canvas.height) ball.dy *= -1;
 
+                // Colisión con Jugador 1
                 if (ball.x < p1.x + paddleW && ball.y > p1.y && ball.y < p1.y + paddleH) {
                     ball.dx = Math.abs(ball.dx) + 0.5;
                     createParticles(ball.x, ball.y, p1.color);
+                    shakeAmount = 5;
+                    conn.send({ type: 'EFFECT', effectType: 'HIT', x: ball.x, y: ball.y, color: p1.color });
                 }
+
+                // Colisión con Jugador 2
                 if (ball.x > p2.x - paddleW && ball.y > p2.y && ball.y < p2.y + paddleH) {
                     ball.dx = -Math.abs(ball.dx) - 0.5;
                     createParticles(ball.x, ball.y, p2.color);
+                    shakeAmount = 5;
+                    conn.send({ type: 'EFFECT', effectType: 'HIT', x: ball.x, y: ball.y, color: p2.color });
                 }
 
                 if (ball.x < 0) {
                     p2.score++;
                     goalFlash = 1;
+                    shakeAmount = 15;
                     resetBall();
                     checkWinner();
+                    conn.send({ type: 'EFFECT', effectType: 'GOAL' });
                 }
+
                 if (ball.x > canvas.width) {
                     p1.score++;
                     goalFlash = 1;
+                    shakeAmount = 15;
                     resetBall();
                     checkWinner();
+                    conn.send({ type: 'EFFECT', effectType: 'GOAL' });
                 }
-                conn.send({ mouseY: p1.y, ballX: ball.x, ballY: ball.y, s1: p1.score, s2: p2.score });
+
+                if (!gameEnded) {
+                    conn.send({
+                        mouseY: p1.y,
+                        ballX: ball.x,
+                        ballY: ball.y,
+                        s1: p1.score,
+                        s2: p2.score
+                    });
+                }
             }
 
+
+            ballTrail.push({ x: ball.x, y: ball.y });
+            if (ballTrail.length > 10) ballTrail.shift();
+
             particles.forEach((p, i) => {
-                p.x += p.vx; p.y += p.vy;
+                p.x += p.vx;
+                p.y += p.vy;
                 p.life -= 0.02;
                 if (p.life <= 0) particles.splice(i, 1);
             });
@@ -513,6 +545,17 @@
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+
+            if (shakeAmount > 0) {
+                let sx = (Math.random() - 0.5) * shakeAmount;
+                let sy = (Math.random() - 0.5) * shakeAmount;
+                ctx.translate(sx, sy);
+                shakeAmount *= 0.9;
+                if (shakeAmount < 0.1) shakeAmount = 0;
+            }
+
+            ctx.clearRect(-20, -20, canvas.width + 40, canvas.height + 40);
 
             if (goalFlash > 0) {
                 ctx.fillStyle = `rgba(255, 255, 255, ${goalFlash})`;
@@ -544,8 +587,8 @@
 
                 ctx.fillStyle = "white";
                 ctx.beginPath();
-                ctx.arc(p.x + paddleW / 2, p.y + 20, 4, 0, Math.PI * 2); // Ojo arriba
-                ctx.arc(p.x + paddleW / 2, p.y + paddleH - 20, 4, 0, Math.PI * 2); // Ojo abajo
+                ctx.arc(p.x + paddleW / 2, p.y + 20, 4, 0, Math.PI * 2);
+                ctx.arc(p.x + paddleW / 2, p.y + paddleH - 20, 4, 0, Math.PI * 2);
                 ctx.fill();
 
                 ctx.fillStyle = "black";
@@ -553,6 +596,14 @@
                 ctx.beginPath();
                 ctx.arc(p.x + paddleW / 2 + dir, p.y + 20, 2, 0, Math.PI * 2);
                 ctx.arc(p.x + paddleW / 2 + dir, p.y + paddleH - 20, 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            ballTrail.forEach((pos, i) => {
+                let ratio = i / ballTrail.length;
+                ctx.fillStyle = `rgba(241, 196, 15, ${ratio * 0.3})`;
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, ball.radius * ratio, 0, Math.PI * 2);
                 ctx.fill();
             });
 
@@ -576,9 +627,11 @@
                 ctx.shadowBlur = 20; ctx.shadowColor = "white";
                 ctx.fillText(winnerText, 400, 250);
                 ctx.font = "20px Arial";
-                ctx.fillText("Recarga la página para jugar de nuevo", 400, 300);
+                ctx.fillText("¡Presiona el botón de Revancha para seguir!", 400, 300);
                 ctx.textAlign = "start";
             }
+
+            ctx.restore();
         }
 
         function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
@@ -605,6 +658,17 @@
             conn.on('data', (data) => {
                 if (data.type === 'REMATCH_REQUEST') {
                     resetGameLogic();
+                    return;
+                }
+
+                if (data.type === 'EFFECT') {
+                    if (data.effectType === 'HIT') {
+                        createParticles(data.x, data.y, data.color);
+                        shakeAmount = 5;
+                    } else if (data.effectType === 'GOAL') {
+                        goalFlash = 1;
+                        shakeAmount = 15;
+                    }
                     return;
                 }
 
