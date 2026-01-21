@@ -535,8 +535,7 @@
                 gameEnded = true;
                 winnerText = "¡JUGADOR 1 GANA!";
                 document.getElementById('btn-rematch').classList.remove('hidden');
-            }
-            if (p2.score >= 10) {
+            } else if (p2.score >= 10) { 
                 gameEnded = true;
                 winnerText = "¡JUGADOR 2 GANA!";
                 document.getElementById('btn-rematch').classList.remove('hidden');
