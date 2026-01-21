@@ -3,10 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="google" content="notranslate">
-    <meta name="format-detection" content="telephone=no">
-    <title>MenteSana | Lobby Hockey Online</title>
+    <title>MenteSana Hockey</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root {
@@ -26,9 +23,9 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            overflow: hidden;
-            touch-action: none;
+            min-height: 100vh;
+            overflow-y: auto;
+            touch-action: auto;
         }
 
         #lobby-container {
@@ -40,7 +37,38 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             border: 2px solid var(--primary);
             text-align: center;
-            transition: all 0.5s ease;
+            margin: 20px 0;
+        }
+
+        .room-list {
+            max-height: 250px;
+            overflow-y: auto;
+            margin: 20px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(26, 188, 156, 0.2);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .room-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .room-list::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        .room-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
         }
 
         h1 {
@@ -54,32 +82,6 @@
             padding: 10px;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 10px;
-        }
-
-        .room-list {
-            max-height: 300px;
-            overflow-y: auto;
-            margin: 20px 0;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-
-        .room-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.1);
-            margin-bottom: 10px;
-            padding: 12px 20px;
-            border-radius: 10px;
-            border-left: 4px solid var(--primary);
-            transition: transform 0.2s;
-        }
-
-        .room-item:hover {
-            transform: scale(1.02);
-            background: rgba(255, 255, 255, 0.15);
         }
 
         button {
@@ -128,8 +130,7 @@
             border-radius: 15px;
             max-width: 95vw;
             max-height: 80vh;
-            cursor: none;
-            touch-action: none;
+            cursor: crosshair;
         }
 
         .hidden {
@@ -137,14 +138,13 @@
         }
 
         .spinner {
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
+            width: 15px;
+            height: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-top-color: var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             display: inline-block;
-            vertical-align: middle;
             margin-right: 10px;
         }
 
@@ -181,6 +181,32 @@
                 display: none !important;
             }
         }
+
+        .pulse-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #2ecc71;
+            /* Verde esmeralda */
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            box-shadow: 0 0 0 rgba(46, 204, 113, 0.4);
+            animation: pulse-animation 2s infinite;
+        }
+
+        @keyframes pulse-animation {
+            0% {
+                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(46, 204, 113, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+            }
+        }
     </style>
 </head>
 
@@ -199,7 +225,10 @@
         <h1>MenteSana Hockey</h1>
         <div class="status-bar">
             <span id="server-status">
-                <div class="spinner"></div> Conectando al servidor...
+                <div class="spinner"></div> Conectando...
+            </span>
+            <span id="heartbeat-status" style="margin-left: 15px; display: none;">
+                <div class="pulse-dot"></div> Sala Activa
             </span>
         </div>
 
@@ -210,7 +239,7 @@
             <p>Buscando partidas...</p>
         </div>
 
-        <p style="font-size: 0.8rem; color: #7f8c8d;">Render puede tardar 30s en despertar si está inactivo.</p>
+        <p style="font-size: 0.7rem; color: #7f8c8d;">Render puede tardar 30s en despertar si está inactivo.</p>
     </div>
 
     <div id="game-view">
@@ -220,16 +249,32 @@
         <canvas id="gameCanvas"></canvas>
         <div style="display: flex; gap: 10px; margin-top: 10px;">
             <button onclick="location.reload()"
-                style="background: transparent; border: 1px solid #7f8c8d; color: #7f8c8d; padding: 8px 15px;">Salir al
-                Lobby</button>
+                style="background: transparent; border: 1px solid #7f8c8d; color: #7f8c8d;">Lobby</button>
             <button onclick="window.location.href='../ludica.html'"
-                style="background: #e74c3c; color: white; padding: 8px 15px;">Salir</button>
+                style="background: #e74c3c; color: white;">Salir</button>
         </div>
     </div>
 
     <script>
-        const SERVER_URL = "https://hockey-mentesana.onrender.com";
+        function playConnectSound() {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
 
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(880.00, audioCtx.currentTime + 0.1);
+
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.3);
+        }
+        const SERVER_URL = "https://hockey-mentesana.onrender.com";
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = 800; canvas.height = 500;
@@ -253,14 +298,22 @@
             setInterval(fetchRooms, 3000);
         });
 
+        window.addEventListener('beforeunload', () => {
+            if (isHost && myPeerId) eliminarSala(myPeerId);
+        });
+
+        window.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden' && isHost && myPeerId) {
+                eliminarSala(myPeerId);
+            }
+        });
+
         async function fetchRooms() {
             try {
                 const response = await fetch(`${SERVER_URL}/rooms`);
                 rooms = await response.json();
                 updateRoomListUI();
-                document.getElementById('server-status').innerHTML = "● Sistema Listo";
             } catch (err) {
-                console.error("Esperando al servidor...");
                 document.getElementById('server-status').innerHTML = "⚠️ Servidor despertando...";
             }
         }
@@ -269,10 +322,6 @@
             isHost = true;
             const nombreJugador = prompt("Introduce tu nombre para la sala:") || "Jugador 1";
 
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen().catch(e => console.log(e));
-            }
-
             try {
                 await fetch(`${SERVER_URL}/rooms`, {
                     method: 'POST',
@@ -280,46 +329,88 @@
                     body: JSON.stringify({ peerId: myPeerId, name: nombreJugador })
                 });
 
+                document.getElementById('heartbeat-status').style.display = 'inline-block';
+
+                const heartInterval = setInterval(async () => {
+                    if (!isHost || conn) {
+                        clearInterval(heartInterval);
+                        document.getElementById('heartbeat-status').style.display = 'none';
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`${SERVER_URL}/rooms/heartbeat`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ peerId: myPeerId })
+                        });
+
+                        if (response.status === 404) {
+                            console.log("La sala expiró en el servidor, recreando...");
+                        }
+                    } catch (e) {
+                        console.error("Fallo de latido");
+                    }
+                }, 4000);
                 document.getElementById('lobby-container').classList.add('hidden');
                 document.getElementById('game-view').style.display = 'flex';
 
                 peer.on('connection', (c) => {
                     conn = c;
-                    eliminarSala(myPeerId);
-                    setupGame();
+                    playConnectSound();
+                    if (navigator.vibrate) navigator.vibrate(200);
+                    isHost = false;
+                    document.getElementById('heartbeat-status').style.display = 'none';
+                    
+                    const statusMsg = document.getElementById('server-status');
+                    statusMsg.innerHTML = "<span style='color: #f1c40f;'>⚡ ¡Oponente conectado! Entrando...</span>";
+                    setTimeout(() => {
+                        eliminarSala(myPeerId);
+                        setupGame();
+                    }, 1000);
                 });
             } catch (err) {
-                alert("Error al conectar con el servidor de salas.");
+                alert("Error al conectar con el servidor.");
             }
         }
 
         function joinGame(hostPeerId) {
             isHost = false;
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen().catch(e => console.log(e));
-            }
-
             document.getElementById('lobby-container').classList.add('hidden');
             document.getElementById('game-view').style.display = 'flex';
-
             conn = peer.connect(hostPeerId);
             setupGame();
         }
 
         async function eliminarSala(peerId) {
-            try { await fetch(`${SERVER_URL}/rooms/${peerId}`, { method: 'DELETE' }); }
-            catch (e) { console.error("Error al borrar sala"); }
+            if (!peerId) return;
+
+            const url = `${SERVER_URL}/rooms/${peerId}`;
+            if (navigator.sendBeacon) {
+                navigator.sendBeacon(url);
+            }
+
+            try {
+                await fetch(url, { method: 'DELETE', keepalive: true });
+            } catch (e) {
+                console.error("Error al intentar borrar sala manualmente");
+            }
         }
 
+        // --- ARREGLO MENSAJE "NO HAY SALAS" ---
         function updateRoomListUI() {
             const listElement = document.getElementById('room-list');
             listElement.innerHTML = "";
-            if (rooms.length === 0) {
-                listElement.innerHTML = "<p>No hay salas activas. ¡Crea la primera!</p>";
+
+            // Filtrar mi propia sala de la lista
+            const availableRooms = rooms.filter(room => room.peerId !== myPeerId);
+
+            if (availableRooms.length === 0) {
+                listElement.innerHTML = "<p style='opacity:0.6; padding:20px;'>No hay salas activas actualmente.<br>¡Crea una partida tú mismo!</p>";
                 return;
             }
-            rooms.forEach(room => {
-                if (room.peerId === myPeerId) return;
+
+            availableRooms.forEach(room => {
                 const item = document.createElement('div');
                 item.className = 'room-item';
                 item.innerHTML = `<span>Partida de: <strong>${room.name}</strong></span><button class="btn-join" onclick="joinGame('${room.peerId}')">UNIRSE</button>`;
@@ -327,13 +418,11 @@
             });
         }
 
-
         function setupGame() {
             document.getElementById('game-status').innerText = "PARTIDA EN CURSO";
             conn.on('data', (data) => {
-                if (isHost) {
-                    p2.y = data.mouseY;
-                } else {
+                if (isHost) { p2.y = data.mouseY; }
+                else {
                     p1.y = data.mouseY;
                     ball.x = data.ballX; ball.y = data.ballY;
                     p1.score = data.s1; p2.score = data.s2;
@@ -342,54 +431,35 @@
             requestAnimationFrame(gameLoop);
         }
 
-
         function handleInput(clientY) {
             const rect = canvas.getBoundingClientRect();
-            const scaleY = canvas.height / rect.height; // Ajuste automático si la pantalla es pequeña
+            const scaleY = canvas.height / rect.height;
             const mouseY = (clientY - rect.top) * scaleY - paddleH / 2;
-
-            if (isHost) p1.y = mouseY;
-            else p2.y = mouseY;
-
-            if (conn && conn.open) {
-                conn.send({ mouseY: mouseY });
-            }
+            if (isHost) p1.y = mouseY; else p2.y = mouseY;
+            if (conn && conn.open) conn.send({ mouseY: mouseY });
         }
 
-        canvas.addEventListener('mousemove', (e) => {
-            handleInput(e.clientY);
-        });
-
+        canvas.addEventListener('mousemove', (e) => handleInput(e.clientY));
         canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault(); 
-            const touch = e.touches[0];
-            handleInput(touch.clientY);
+            e.preventDefault();
+            handleInput(e.touches[0].clientY);
         }, { passive: false });
 
-        // --- FISICA ---
         function update() {
             if (isHost && conn && conn.open) {
                 ball.x += ball.dx; ball.y += ball.dy;
-
                 if (ball.y < 0 || ball.y > canvas.height) ball.dy *= -1;
-
-                if (ball.x < p1.x + paddleW && ball.y > p1.y && ball.y < p1.y + paddleH) {
-                    ball.dx = Math.abs(ball.dx) + 0.3;
-                }
-                if (ball.x > p2.x - paddleW && ball.y > p2.y && ball.y < p2.y + paddleH) {
-                    ball.dx = -Math.abs(ball.dx) - 0.3;
-                }
-
+                if (ball.x < p1.x + paddleW && ball.y > p1.y && ball.y < p1.y + paddleH) ball.dx = Math.abs(ball.dx) + 0.3;
+                if (ball.x > p2.x - paddleW && ball.y > p2.y && ball.y < p2.y + paddleH) ball.dx = -Math.abs(ball.dx) - 0.3;
                 if (ball.x < 0) { p2.score++; resetBall(); }
                 if (ball.x > canvas.width) { p1.score++; resetBall(); }
-
                 conn.send({ mouseY: p1.y, ballX: ball.x, ballY: ball.y, s1: p1.score, s2: p2.score });
             }
         }
 
         function resetBall() {
             ball.x = 400; ball.y = 250;
-            ball.dx = isHost ? 4 : -4;
+            ball.dx = 4 * (Math.random() > 0.5 ? 1 : -1);
             ball.dy = (Math.random() - 0.5) * 8;
         }
 
@@ -399,15 +469,11 @@
             ctx.strokeStyle = "rgba(255,255,255,0.2)";
             ctx.beginPath(); ctx.moveTo(400, 0); ctx.lineTo(400, 500); ctx.stroke();
             ctx.setLineDash([]);
-
             ctx.font = "40px Arial";
             ctx.fillStyle = "rgba(255,255,255,0.3)";
-            ctx.fillText(p1.score, 350, 60);
-            ctx.fillText(p2.score, 420, 60);
-
+            ctx.fillText(p1.score, 350, 60); ctx.fillText(p2.score, 420, 60);
             ctx.fillStyle = p1.color; ctx.fillRect(p1.x, p1.y, paddleW, paddleH);
             ctx.fillStyle = p2.color; ctx.fillRect(p2.x, p2.y, paddleW, paddleH);
-
             ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
             ctx.fillStyle = "#f1c40f"; ctx.fill();
         }
