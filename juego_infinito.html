@@ -213,10 +213,9 @@
         </div>
 
         <script>
-            let highScore = localStorage.getItem('menteSanaHighScore') || 0;
+            let highScore = parseInt(localStorage.getItem('menteSanaHighScore')) || 0;
             const canvas = document.getElementById('gameCanvas');
             const ctx = canvas.getContext('2d');
-
 
             const width = 800;
             const height = 450;
@@ -234,6 +233,11 @@
             let obstacles = [];
             let particles = [];
             let stars = [];
+            let powerUps = [];
+
+            // Boss system
+            let currentBoss = null;
+            let nextBossAt = 1000; 
 
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             const audioCtx = new AudioContext();
@@ -271,6 +275,30 @@
                     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
                     osc.start(now);
                     osc.stop(now + 0.05);
+                } else if (type === 'bossEnter') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(120, now);
+                    osc.frequency.linearRampToValueAtTime(400, now + 0.5);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                    osc.start(now);
+                    osc.stop(now + 0.6);
+                } else if (type === 'bossExit') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(500, now);
+                    osc.frequency.exponentialRampToValueAtTime(200, now + 0.4);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                } else if (type === 'powerup') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.12);
+                    gain.gain.setValueAtTime(0.18, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.14);
+                    osc.start(now);
+                    osc.stop(now + 0.14);
                 }
             }
 
@@ -281,13 +309,16 @@
                     this.y = height / 2;
                     this.radius = 15;
                     this.velocity = 0;
-                    this.gravity = 0.4;
-                    this.lift = -7;
+                    // pequeña mejora en físicas ;)
+                    this.gravity = 0.45; 
+                    this.lift = -7.5;
                     this.color = '#1abc9c';
                     this.blinkTimer = 0;
                     this.isBlinking = false;
                     this.lives = 5;
                     this.invincible = 0;
+                    this.shieldActive = false; // estado de 3scudo :v
+                    this.shieldTimer = 0;
                 }
 
                 draw() {
@@ -299,6 +330,15 @@
                     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.shadowBlur = 0;
+
+                    // dibujo del escudo si está activo
+                    if (this.shieldActive) {
+                        ctx.beginPath();
+                        ctx.lineWidth = 4;
+                        ctx.strokeStyle = 'rgba(135,206,250,0.7)';
+                        ctx.arc(this.x, this.y, this.radius + 8, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
 
                     this.blinkTimer++;
                     if (this.blinkTimer > 150) {
@@ -321,9 +361,17 @@
 
                 update() {
                     this.velocity += this.gravity;
+                    // límite de velocidad para evitar caídas imposibles :/
+                    this.velocity = Math.min(this.velocity, 8);
                     this.y += this.velocity;
 
                     if (this.invincible > 0) this.invincible--;
+                    if (this.shieldTimer > 0) {
+                        this.shieldTimer--;
+                        if (this.shieldTimer <= 0) {
+                            this.shieldActive = false;
+                        }
+                    }
 
                     if (this.y + this.radius > height) {
                         this.y = height - this.radius;
@@ -392,11 +440,23 @@
 
                 draw() {
                     ctx.shadowBlur = 15;
-                    ctx.shadowColor = this.type === 'laser' ? this.color : this.sub.color;
-                    ctx.fillStyle = this.type === 'laser' ? this.color : this.sub.color;
+                    ctx.shadowColor = this.type === 'laser' ? this.color : (this.sub ? this.sub.color : '#ff4757');
+                    ctx.fillStyle = this.type === 'laser' ? this.color : (this.sub ? this.sub.color : '#ff4757');
 
                     if (this.type === 'laser') {
                         ctx.fillRect(this.x, this.y, 10, this.height);
+                    } else if (this.type === 'bossLaser') {
+                        // boss laser (horizontal rectangle)
+                        ctx.fillRect(this.x, this.y, this.width || 10, this.height || 6);
+                    } else if (this.type === 'powerup') {
+                        // dibujar powerup como caja con icono
+                        ctx.fillStyle = this.sub && this.sub.color ? this.sub.color : '#16a085';
+                        ctx.beginPath();
+                        ctx.rect(this.x - 12, this.y - 12, 24, 24);
+                        ctx.fill();
+                        ctx.fillStyle = 'white';
+                        ctx.font = 'bold 12px Segoe UI';
+                        ctx.fillText(this.powerType === 'shield' ? 'S' : 'T', this.x - 6, this.y + 5);
                     } else {
                         ctx.beginPath();
                         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
@@ -481,6 +541,196 @@
                 }
             }
 
+            // powerup class
+            class PowerUp {
+                constructor(x, y, type) {
+                    this.x = x;
+                    this.y = y;
+                    this.type = 'powerup';
+                    this.powerType = type; // 'shield' o 'slow'
+                    this.radius = 12;
+                    this.markedForDeletion = false;
+                    this.sub = { color: type === 'shield' ? '#3498db' : '#f1c40f' };
+                }
+
+                update() {
+                    this.x -= gameSpeed * 0.9;
+                    this.y += Math.sin(frame * 0.05) * 0.6; // flotación
+                    if (this.x < -50) this.markedForDeletion = true;
+                }
+
+                draw() {
+                    // reutilizamos draw de Obstacle para 'powerup'
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = this.sub.color;
+                    ctx.fillStyle = this.sub.color;
+                    ctx.fillRect(this.x - 12, this.y - 12, 24, 24);
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 12px Segoe UI';
+                    ctx.fillText(this.powerType === 'shield' ? 'S' : 'T', this.x - 6, this.y + 5);
+                }
+            }
+
+            // Boss and boss lasers ;-;
+            class Boss {
+                constructor(type) {
+                    this.type = type; //tiposs 'enojo' | 'tristeza' | 'ansiedad'
+                    this.x = width + 250; // entra desde más lejos
+                    this.targetX = width - 160;
+                    this.y = height / 2;
+                    this.width = 120;
+                    this.height = 120;
+                    this.timer = 0;
+                    this.duration = 700; // cuánto dura el encuentro (frames)
+                    // frecuencia depende del tipo
+                    if (type === 'enojo') this.shootInterval = 40; // rápido
+                    else if (type === 'tristeza') this.shootInterval = 80; // lento pero largo
+                    else this.shootInterval = 60; // ansiedad: intermitente
+                    this.baseShootInterval = this.shootInterval;
+                    this.faceColor = type === 'enojo' ? '#e74c3c' : (type === 'tristeza' ? '#9b59b6' : '#f39c12');
+                    this.enterSpeed = 10; // entrada más marcada
+                    this.alpha = 0; // para fade in/out
+                    this.exiting = false;
+                    this.slowTimer = 0; // si aplica slow
+                    this.entered = false;
+                    // al crear el boss reproducir sonido
+                    playSound('bossEnter');
+
+                    // spawn chance de powerup al inicio del boss
+                    if (Math.random() < 0.8) {
+                        const pType = Math.random() < 0.5 ? 'shield' : 'slow';
+                        powerUps.push(new PowerUp(this.targetX - 80, Math.random() * (height - 120) + 60, pType));
+                    }
+                }
+
+                update() {
+                    if (!this.entered) {
+                        if (this.x > this.targetX) {
+                            this.x -= this.enterSpeed;
+                            this.alpha += 0.06;
+                            if (this.alpha > 1) this.alpha = 1;
+                        } else {
+                            this.entered = true;
+                            this.alpha = 1;
+                        }
+                    }
+
+                    this.timer++;
+
+                    // aplicar slow temporal si existe
+                    if (this.slowTimer > 0) {
+                        this.slowTimer--;
+                        if (this.slowTimer === 0) {
+                            this.shootInterval = this.baseShootInterval; // restaurar
+                        }
+                    }
+
+                    if (this.timer % this.shootInterval === 0 && this.entered && !this.exiting) {
+                        this.shootPattern();
+                    }
+
+                    // si llega al fin de duración, empezar salida
+                    if (this.timer > this.duration && !this.exiting) {
+                        this.exiting = true;
+                        playSound('bossExit');
+                    }
+
+                    // salida animada
+                    if (this.exiting) {
+                        this.x += this.enterSpeed * 1.2;
+                        this.alpha -= 0.03;
+                        if (this.alpha <= 0) this.alpha = 0;
+                    }
+                }
+
+                draw() {
+                    ctx.save();
+                    ctx.globalAlpha = this.alpha;
+                    // cuerpo
+                    ctx.shadowBlur = 30;
+                    ctx.shadowColor = this.faceColor;
+                    ctx.fillStyle = this.faceColor;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.width / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+
+                    ctx.fillStyle = 'white';
+                    if (this.type === 'enojo') {
+                        ctx.beginPath();
+                        ctx.moveTo(this.x - 30, this.y - 20);
+                        ctx.lineTo(this.x - 10, this.y - 12);
+                        ctx.strokeStyle = 'white';
+                        ctx.lineWidth = 4;
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.moveTo(this.x + 30, this.y - 20);
+                        ctx.lineTo(this.x + 10, this.y - 12);
+                        ctx.stroke();
+
+                        ctx.fillStyle = 'black';
+                        ctx.fillRect(this.x - 20, this.y + 10, 40, 8);
+                    } else if (this.type === 'tristeza') {
+                        ctx.beginPath();
+                        ctx.arc(this.x - 14, this.y - 12, 6, 0, Math.PI * 2);
+                        ctx.arc(this.x + 14, this.y - 12, 6, 0, Math.PI * 2);
+                        ctx.fillStyle = 'white';
+                        ctx.fill();
+
+                        ctx.beginPath();
+                        ctx.strokeStyle = 'black';
+                        ctx.lineWidth = 3;
+                        ctx.moveTo(this.x - 12, this.y + 18);
+                        ctx.quadraticCurveTo(this.x, this.y + 6, this.x + 12, this.y + 18);
+                        ctx.stroke();
+                    } else {
+                        ctx.beginPath();
+                        ctx.arc(this.x - 14, this.y - 12, 7, 0, Math.PI * 2);
+                        ctx.arc(this.x + 14, this.y - 12, 7, 0, Math.PI * 2);
+                        ctx.fillStyle = 'white';
+                        ctx.fill();
+
+                        ctx.fillStyle = 'black';
+                        ctx.fillRect(this.x - 25, this.y + 6, 50, 10);
+                    }
+
+                    // etiqueta BOSS
+                    ctx.fillStyle = '#ecf0f1';
+                    ctx.font = 'bold 16px Segoe UI';
+                    ctx.fillText('JEFE ' + (this.type === 'enojo' ? 'ENOJÓN' : (this.type === 'tristeza' ? 'TRISTE' : 'ANSIOSO')), this.x - 50, this.y - this.height / 2 - 10);
+                    ctx.restore();
+                }
+
+                shootPattern() {
+                    if (!gameRunning) return;
+                    if (this.type === 'enojo') {
+                        const targetY = player.y + (Math.random() * 40 - 20);
+                        obstacles.push(createBossLaser(this.x - this.width / 2, targetY - 3, 10, 6, 8));
+                    } else if (this.type === 'tristeza') {
+                        const yPos = Math.random() * (height - 120) + 60;
+                        obstacles.push(createBossLaser(this.x - this.width / 2, yPos - 10, 10, height * 0.6, 4));
+                    } else {
+                        const offsets = [0, -60, 60];
+                        offsets.forEach(off => {
+                            obstacles.push(createBossLaser(this.x - this.width / 2, player.y + off - 3, 10, 6, 7));
+                        });
+                    }
+                }
+            }
+
+            function createBossLaser(x, y, w, h, speed) {
+                const l = new Obstacle();
+                l.type = 'bossLaser';
+                l.x = x;
+                l.y = y;
+                l.width = w;
+                l.height = h;
+                l.speed = speed;
+                l.color = '#ff4757';
+                l.markedForDeletion = false;
+                return l;
+            }
 
             function init() {
                 player = new Player();
@@ -496,20 +746,51 @@
                 player.lives = 5;
                 updateLivesUI();
                 updateHighScoreUI();
+                currentBoss = null;
+                nextBossAt = 1000;
+                powerUps = [];
             }
 
             function checkCollisions() {
+                // revisar colisiones con powerups primero
+                powerUps.forEach((pu, pIndex) => {
+                    const dx = pu.x - player.x;
+                    const dy = pu.y - player.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < player.radius + pu.radius) {
+                        // recoger powerup
+                        if (pu.powerType === 'shield') {
+                            player.shieldActive = true;
+                            player.shieldTimer = 180; // 3s a 60fps
+                            player.invincible = Math.max(player.invincible, 0); // no interferir
+                            playSound('powerup');
+                        } else if (pu.powerType === 'slow' && currentBoss) {
+                            // aplicar slow al boss
+                            currentBoss.slowTimer = 360; // 6s
+                            currentBoss.shootInterval = Math.floor(currentBoss.baseShootInterval * 1.6);
+                            playSound('powerup');
+                        }
+                        pu.markedForDeletion = true;
+                    }
+                });
+
                 obstacles.forEach(obs => {
                     let collision = false;
 
-                    if (obs.type !== 'laser') {
+                    if (obs.type !== 'laser' && obs.type !== 'bossLaser' && obs.type !== 'powerup') {
                         const dx = obs.x - player.x;
                         const dy = obs.y - player.y;
                         const distance = Math.sqrt(dx * dx + dy * dy);
                         if (distance < obs.radius + player.radius) collision = true;
+                    } else if (obs.type === 'powerup') {
+                        // powerups ya manejados arriba
+                        collision = false;
                     } else {
-                        if (player.x + player.radius > obs.x && player.x - player.radius < obs.x + 10 &&
-                            player.y + player.radius > obs.y && player.y - player.radius < obs.y + obs.height) {
+                        // rect collision for lasers and boss lasers
+                        const obsW = obs.width || 10;
+                        const obsH = obs.height || obs.height === 0 ? obs.height : 6;
+                        if (player.x + player.radius > obs.x && player.x - player.radius < obs.x + obsW &&
+                            player.y + player.radius > obs.y && player.y - player.radius < obs.y + obsH) {
                             collision = true;
                         }
                     }
@@ -525,7 +806,7 @@
                             obs.markedForDeletion = true;
                             for (let i = 0; i < 8; i++) particles.push(new Particle(player.x, player.y, '#2ecc71'));
 
-                        } else if (player.invincible === 0) {
+                        } else if (player.invincible === 0 && !player.shieldActive) {
                             player.lives--;
                             player.invincible = 60;
                             updateLivesUI();
@@ -536,6 +817,13 @@
                             obs.markedForDeletion = true;
                             playSound('crash');
                             if (player.lives <= 0) gameOver();
+                        } else if (player.shieldActive) {
+                            // si hay escudo, protege y se consume
+                            player.shieldActive = false;
+                            player.shieldTimer = 0;
+                            obs.markedForDeletion = true;
+                            for (let i = 0; i < 6; i++) particles.push(new Particle(player.x, player.y, '#3498db'));
+                            playSound('powerup');
                         }
                     }
                 });
@@ -559,6 +847,9 @@
 
             function handleObstacles() {
 
+                // si hay boss activo, pausamos spawn normal para que el encuentro sea claro y justo
+                if (currentBoss) return;
+
                 let spawnRate = Math.max(40, 90 - Math.floor(score / 50));
 
                 if (frame % spawnRate === 0) {
@@ -575,14 +866,35 @@
 
                 if (gameRunning) {
                     frame++;
-                    if (frame % 400 === 0 && gameSpeed < 10) {
-                        gameSpeed += 0.25;
+                    if (frame % 200 === 0 && gameSpeed < 12) {
+                        gameSpeed += 0.05; // incremento suave
+                    }
+                    if (frame % 400 === 0 && gameSpeed < 12) {
+                        gameSpeed += 0.15; // mantiene escalaridad anterior pero más suave
                     }
                     if (frame % 10 === 0) score++;
+
+                    // spawn boss cuando se alcanza la marca
+                    if (!currentBoss && score >= nextBossAt) {
+                        const types = ['enojo', 'tristeza', 'ansiedad'];
+                        const t = types[Math.floor(Math.random() * types.length)];
+                        currentBoss = new Boss(t);
+                        nextBossAt += 1000;
+                    }
 
                     player.update();
                     handleObstacles();
                     checkCollisions();
+
+                    // actualizar boss o gfe
+                    if (currentBoss) {
+                        currentBoss.update();
+                        if (currentBoss.exiting && currentBoss.alpha <= 0) {
+                            // limpiar lasers restantes del boss 
+                            obstacles = obstacles.filter(o => o.type !== 'bossLaser');
+                            currentBoss = null;
+                        }
+                    }
                 }
 
                 stars.forEach(star => {
@@ -594,8 +906,25 @@
                     player.draw();
                 }
 
-                obstacles.forEach(obs => {
-                    if (gameRunning) obs.update();
+                // dibujar boss si existe (para que esté encima)
+                if (currentBoss) currentBoss.draw();
+
+                powerUps.forEach((pu) => {
+                    if (gameRunning) pu.update();
+                    pu.draw();
+                });
+                powerUps = powerUps.filter(p => !p.markedForDeletion);
+
+                obstacles.forEach((obs) => {
+                    if (gameRunning) {
+                        // actualizar movimiento especial para bossLaser
+                        if (obs.type === 'bossLaser') {
+                            obs.x -= obs.speed || 6;
+                            if (obs.x < -200) obs.markedForDeletion = true;
+                        } else {
+                            obs.update();
+                        }
+                    }
                     obs.draw();
                 });
 
