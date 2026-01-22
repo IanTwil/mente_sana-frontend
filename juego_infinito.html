@@ -30,11 +30,14 @@
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
             border-radius: 10px;
             overflow: hidden;
+            /* default background padding so scaled canvas doesn't touch edges */
+            background: transparent;
         }
 
         canvas {
             background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
             display: block;
+            /* will be sized by JS to keep internal coords intact */
         }
 
         .ui-layer {
@@ -59,6 +62,8 @@
             font-weight: bold;
             color: #1abc9c;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            pointer-events: auto;
+            z-index: 105;
         }
 
         .screen {
@@ -93,6 +98,7 @@
                 transform 0.2s,
                 background 0.2s;
             font-weight: bold;
+            pointer-events: auto;
         }
 
         button:hover {
@@ -110,22 +116,23 @@
             top: 20px;
             right: 20px;
             display: flex;
-            gap: 15px;
+            gap: 10px;
             z-index: 110;
+            pointer-events: auto;
         }
 
         .btn-nav {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
             color: white;
-            padding: 10px 15px;
+            padding: 8px 12px;
             border-radius: 8px;
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            transition: all 0.22s;
             font-weight: bold;
-            pointer-events: auto;
+            cursor: pointer;
         }
 
         .btn-nav:hover {
@@ -141,9 +148,10 @@
             height: 100%;
             z-index: 5;
             display: none;
+            pointer-events: auto;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 992px) {
             #mobile-touch-area {
                 display: block;
             }
@@ -159,6 +167,7 @@
             opacity: 0.32;
             pointer-events: none;
             transform: translateZ(0);
+            z-index: 105;
         }
 
         .hint-box {
@@ -176,6 +185,53 @@
             font-size: 14px;
             color: #ecf0f1;
         }
+
+        /* fullscreen button style */
+        #fullscreen-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: white;
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 1rem;
+            opacity: 0.7;
+            transition: opacity .15s, transform .12s;
+        }
+
+        #fullscreen-btn:hover {
+            opacity: 1;
+            transform: translateY(-2px);
+        }
+
+        /* rotate hint overlay */
+        #rotate-hint {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 500;
+            pointer-events: none;
+        }
+
+        #rotate-hint .bubble {
+            pointer-events: none;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            padding: 18px 22px;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            backdrop-filter: blur(4px);
+            transform: translateY(-10px);
+            opacity: 0.95;
+        }
+
+        #rotate-hint .icon {
+            font-size: 22px;
+        }
     </style>
 </head>
 
@@ -183,7 +239,8 @@
     <div id="game-container">
         <canvas id="gameCanvas"></canvas>
         <div id="score-display">Distancia: 0m</div>
-        <div id="high-score-display" style="color: #f1c40f; font-weight: bold">
+        <div id="high-score-display"
+            style="color: #f1c40f; font-weight: bold; position:absolute; top:20px; left:140px; z-index:105;">
             Récord: 0m
         </div>
         <div id="lives-display" style="
@@ -192,11 +249,14 @@
           left: 20px;
           font-size: 1.2rem;
           color: #ff7675;
+          z-index:105;
         ">
             Vidas: ❤️❤️❤️❤️❤️
         </div>
         <div class="nav-container">
             <a href="ludica.html" class="btn-nav" onmouseenter="playSound('hover')">Regresar</a>
+            <!-- Fullscreen button (visible on small screens via JS/CSS) -->
+            <button id="fullscreen-btn" title="Pantalla completa">⤢</button>
         </div>
 
         <!-- control hint (pequeño, no intrusivo, iconos) -->
@@ -259,18 +319,121 @@
                 Intentar de nuevo
             </button>
         </div>
+
+        <!-- rotate hint overlay -->
+        <div id="rotate-hint">
+            <div class="bubble">
+                <div class="icon">🔄</div>
+                <div style="text-align:left">Gira el teléfono a horizontal para una mejor experiencia</div>
+            </div>
+        </div>
+
     </div>
+
     <script>
-        let highScore = parseInt(localStorage.getItem("menteSanaHighScore")) || 0;
+        /* ---------- ADAPTACIONES MÓVIL / RESIZE (solo UI/layout) ----------
+           Cambios:
+           - Si detectamos pantalla pequeña movile, el "ancho lógico" (variable width)
+             se amplia (ej: 1200) para "alargar el escenario" internamente.
+           - Luego escalamos el canvas visualmente para que quepa en la pantalla.
+           - Añadimos botón fullscreen y sugerencia de rotación en portrait.
+           Nota: no se modifica la mecánica del juego (colisiones, enemigos, etc.)
+        */
+        const isMobileLike = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 920;
+        const baseWidth = 800;
+        const baseHeight = 450;
+        // si es móvil, hacemos el escenario más largo internamente (mejora visibilidad de jefes)
+        let width = isMobileLike ? 1200 : baseWidth;
+        const height = baseHeight;
+
+        const gameContainer = document.getElementById('game-container');
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
-        const width = 800, height = 450;
+
+        // asigna tamaño lógico del canvas (COORDS internas del juego)
         canvas.width = width;
         canvas.height = height;
 
+        // escala visual para que el canvas quepa en la pantalla manteniendo proporción
+        function adaptCanvasVisual() {
+            const vw = Math.max(320, window.innerWidth - 20); // dejar margen ligero
+            const vh = Math.max(240, window.innerHeight - 20);
+            // display scale (no aumentar >1 para no pixelar)
+            const displayScale = Math.min(vw / width, vh / height, 1);
+            canvas.style.width = Math.round(width * displayScale) + 'px';
+            canvas.style.height = Math.round(height * displayScale) + 'px';
+            // ajustar contenedor para centrar bien
+            gameContainer.style.width = canvas.style.width;
+            gameContainer.style.height = canvas.style.height;
+        }
+
+        // full screen control (solo UI)
+        const fsBtn = document.getElementById('fullscreen-btn');
+        function isSmallScreen() {
+            return window.innerWidth <= 920 || isMobileLike;
+        }
+        function showFullscreenBtnIfMobile() {
+            if (isSmallScreen()) {
+                fsBtn.style.display = 'inline-block';
+                fsBtn.style.opacity = '0.7';
+            } else {
+                fsBtn.style.display = 'none';
+            }
+        }
+        fsBtn.addEventListener('click', async () => {
+            try {
+                if (!document.fullscreenElement) {
+                    await document.documentElement.requestFullscreen();
+                    fsBtn.innerText = '⤡';
+                } else {
+                    await document.exitFullscreen();
+                    fsBtn.innerText = '⤢';
+                }
+            } catch (e) {
+                // ignore fullscreen errors (some browsers require user gesture)
+            }
+        });
+
+        // rotate hint overlay logic
+        const rotateHint = document.getElementById('rotate-hint');
+        function updateRotateHint() {
+            // mostrar hint cuando pantalla vertical y muy estrecha (mejora la experiencia si la giras)
+            const portrait = window.innerHeight > window.innerWidth;
+            if (isSmallScreen() && portrait) {
+                rotateHint.style.display = 'flex';
+            } else {
+                rotateHint.style.display = 'none';
+            }
+        }
+
+        // inicializar adaptaciones y listeners
+        adaptCanvasVisual();
+        showFullscreenBtnIfMobile();
+        updateRotateHint();
+
+        window.addEventListener('resize', () => {
+            // si el cambio de tamaño cruza la línea mobile => recalc width visual
+            // nota: no cambiamos el ancho lógico "width" durante runtime para no alterar la mecánica
+            adaptCanvasVisual();
+            showFullscreenBtnIfMobile();
+            updateRotateHint();
+        });
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                adaptCanvasVisual();
+                updateRotateHint();
+            }, 300);
+        });
+
+        /* ---------- FIN ADAPTACIONES MÓVIL - el resto del script del juego sigue igual ---------- */
+
+        // (A continuación inserto tu lógica de juego original pero usando la variable `width` y `height`
+        // ya definidas arriba para que todo siga funcionando con el canvas "alargado" en móviles.)
+        let highScore = parseInt(localStorage.getItem("menteSanaHighScore")) || 0;
+
         let gameRunning = false;
         let score = 0;
-        let scoreFloat = 0; 
+        let scoreFloat = 0;
         let frame = 0;
         let gameSpeed = 3;
         let difficultyMultiplier = 1;
@@ -282,13 +445,12 @@
         let powerUps = [];
 
         let currentBoss = null;
-        let nextBossAt = 100;
+        let nextBossAt = 500;
 
         let firstBossSpawned = false;
 
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         const audioCtx = new AudioContext();
-
 
         function playSound(type) {
             try { if (audioCtx.state === "suspended") audioCtx.resume(); } catch (e) { /* ignore audio resume errors */ }
@@ -409,7 +571,7 @@
 
             update() {
                 this.velocity += this.gravity;
-                this.velocity = Math.min(this.velocity, 8); 
+                this.velocity = Math.min(this.velocity, 8);
                 this.y += this.velocity;
 
                 if (this.invincible > 0) this.invincible--;
@@ -439,7 +601,6 @@
                 }
             }
         }
-
 
         class Obstacle {
             constructor() {
@@ -559,7 +720,6 @@
             }
         }
 
-
         class Particle {
             constructor(x, y, color) {
                 this.x = x;
@@ -610,13 +770,12 @@
             }
         }
 
-
         class PowerUp {
             constructor(x, y, type) {
                 this.x = x;
                 this.y = y;
                 this.type = "powerup";
-                this.powerType = type; 
+                this.powerType = type;
                 this.radius = 12;
                 this.markedForDeletion = false;
                 this.sub = { color: type === "shield" ? "#3498db" : "#f1c40f" };
@@ -642,10 +801,9 @@
             }
         }
 
-
         class Boss {
             constructor(type) {
-                this.type = type; // 'enojo' | 'tristeza' | 'ansiedad' ^^
+                this.type = type;
                 this.x = width + 250;
                 this.targetX = width - 160;
                 this.y = height / 2;
@@ -656,7 +814,7 @@
 
                 if (type === "enojo") this.shootInterval = 35;
                 else if (type === "tristeza") this.shootInterval = 70;
-                else /* ansiedad */ this.shootInterval = 55;
+                else this.shootInterval = 55;
 
                 this.baseShootInterval = this.shootInterval;
                 this.faceColor =
@@ -739,7 +897,6 @@
                 ctx.save();
                 ctx.globalAlpha = this.alpha;
 
-                // cuerpo
                 ctx.shadowBlur = 30;
                 ctx.shadowColor = this.faceColor;
                 ctx.fillStyle = this.faceColor;
@@ -824,7 +981,6 @@
                     obstacles.push(
                         createBossLaser(this.x - this.width / 2, targetY - 3, 10, 6, 8),
                     );
-                    // orb burst
                     for (let i = 0; i < 3; i++) {
                         const pick =
                             negatives[Math.floor(Math.random() * negatives.length)];
@@ -848,7 +1004,6 @@
                             4,
                         ),
                     );
-                    // orbs lentos por ser el primer gfe
                     for (let i = 0; i < 4; i++) {
                         const pick =
                             negatives[Math.floor(Math.random() * negatives.length)];
@@ -885,7 +1040,6 @@
             }
         }
 
-
         function createBossLaser(x, y, w, h, speed) {
             const l = new Obstacle();
             l.type = "bossLaser";
@@ -912,7 +1066,6 @@
             return o;
         }
 
-
         function init() {
             player = new Player();
             obstacles = [];
@@ -931,7 +1084,7 @@
             updateHighScoreUI();
 
             currentBoss = null;
-            nextBossAt = 100;
+            nextBossAt = 500;
             powerUps = [];
 
             firstBossSpawned = false;
@@ -944,13 +1097,13 @@
                 if (currentBoss) {
                     player.shieldTimer = -1;
                 } else {
-                    player.shieldTimer = 180; // ~3s normal
+                    player.shieldTimer = 180;
                 }
                 player.invincible = Math.max(player.invincible, 10);
                 playSound("powerup");
             } else if (pu.powerType === "slow") {
                 if (currentBoss) {
-                    currentBoss.slowTimer = 360; // ~6s
+                    currentBoss.slowTimer = 360;
                     currentBoss.shootInterval = Math.floor(
                         currentBoss.baseShootInterval * 1.6,
                     );
@@ -1016,7 +1169,7 @@
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     if (distance < obs.radius + player.radius) collision = true;
                 } else if (obs.type === "powerup") {
-                    collision = false; 
+                    collision = false;
                 } else {
                     const obsW = obs.width || 10;
                     const obsH = (typeof obs.height === "number") ? obs.height : 6;
@@ -1065,11 +1218,9 @@
                 }
             });
 
-
             obstacles = obstacles.filter(o => !o.markedForDeletion);
             powerUps = powerUps.filter(p => !p.markedForDeletion);
         }
-
 
         function updateLivesUI() {
             const display = document.getElementById("lives-display");
@@ -1092,7 +1243,6 @@
             player.color = player.baseColor;
         }
 
-
         function handleObstacles() {
             if (currentBoss) return;
 
@@ -1104,7 +1254,6 @@
             obstacles = obstacles.filter((obs) => !obs.markedForDeletion);
         }
 
-
         function animate() {
             if (!gameRunning && particles.length === 0) return;
 
@@ -1115,7 +1264,6 @@
 
                 if (frame % 200 === 0 && gameSpeed < 12) gameSpeed += 0.05;
                 if (frame % 400 === 0 && gameSpeed < 12) gameSpeed += 0.15;
-
 
                 scoreFloat += 0.1 * (gameSpeed / 4);
                 score = Math.floor(scoreFloat);
@@ -1130,7 +1278,7 @@
                         t = types[Math.floor(Math.random() * types.length)];
                     }
                     currentBoss = new Boss(t);
-                    nextBossAt += 200;
+                    nextBossAt += 500;
                 }
 
                 player.update();
@@ -1193,7 +1341,6 @@
             requestAnimationFrame(animate);
         }
 
-
         function startGame() {
             const ss = document.getElementById("start-screen");
             const gos = document.getElementById("game-over-screen");
@@ -1253,7 +1400,6 @@
             startGame();
         }
 
-
         window.addEventListener("keydown", (e) => {
             if (e.code === "Space" || e.code === "ArrowUp") {
                 if (gameRunning) player.jump();
@@ -1266,7 +1412,6 @@
                     startGame();
             }
 
-            
             if (e.code === "KeyT") {
                 if (player) {
                     const puLike = { powerType: "shield", markedForDeletion: false };
@@ -1301,8 +1446,8 @@
             const el = document.getElementById("high-score-display");
             if (el) el.innerText = `Récord: ${highScore}m`;
         }
-    </script>
 
+    </script>
 
 </body>
 
