@@ -61,8 +61,8 @@
 
         #high-score-display {
             position: absolute;
-            top: 18px;
-            right: 80px; 
+            bottom: 18px;
+            left: 18px;
             font-weight: 700;
             color: #f1c40f;
             z-index: 105;
@@ -183,12 +183,11 @@
         }
 
         .heart-filled svg { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35)); }
-
         .heart-empty svg { opacity: 0.95; }
 
         @media (max-width: 480px) {
             #score-display { font-size: 1.25rem; left: 10px; }
-            #high-score-display { right: 60px; top: 14px; font-size: .95rem; }
+            #high-score-display { left: 12px; bottom: 10px; font-size: 0.95rem; }
             .heart { width: 24px; height: 24px; }
             .nav-container { top: 10px; right: 10px; }
         }
@@ -206,7 +205,12 @@
         <div id="lives-display" aria-hidden="true"></div>
 
         <div class="nav-container">
-            <a href="ludica.html" class="btn-back" onmouseenter="playSound('hover')" title="Regresar" aria-label="Regresar">
+            <a href="ludica.html"
+               class="btn-back"
+               onmouseenter="playSound('hover')"
+               title="Regresar"
+               aria-label="Regresar"
+               onclick="if(!confirm('¿Salir al menú?')){ event.preventDefault(); return false; }">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <circle cx="12" cy="12" r="11" stroke="rgba(255,255,255,0.12)" fill="rgba(0,0,0,0.04)"/>
                     <path d="M13.5 8.5L10 12L13.5 15.5" stroke="#ecf0f1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -622,7 +626,6 @@
             powerUps = powerUps.filter(p => !p.markedForDeletion);
         }
 
-
         function updateLivesUI() {
             const display = document.getElementById("lives-display");
             if (!display || !player) return;
@@ -638,7 +641,6 @@
                 display.appendChild(span);
             }
 
-            // set player.baseColor / color unchanged behavior
             const colors = { 5: "#1abc9c", 4: "#3498db", 3: "#f1c40f", 2: "#e67e22", 1: "#e74c3c" };
             player.baseColor = colors[player.lives] || colors[1];
             player.color = player.baseColor;
@@ -765,11 +767,59 @@
         stars.forEach((star) => star.draw());
 
         const touchArea = document.getElementById("mobile-touch-area");
+        let touchJumpIntervalId = null;
+        let touchHolding = false;
+        const TOUCH_REPEAT_MS = 160; 
+
+        function clearTouchJump() {
+            if (touchJumpIntervalId) {
+                clearInterval(touchJumpIntervalId);
+                touchJumpIntervalId = null;
+            }
+            touchHolding = false;
+        }
+
         if (touchArea) {
             touchArea.addEventListener("touchstart", (e) => {
-                if (gameRunning) { player.jump(); e.preventDefault(); }
-                else if (document.getElementById("start-screen").classList.contains("hidden") === false) startGame();
-            });
+                if (!gameRunning && document.getElementById("start-screen").classList.contains("hidden") === false) {
+                    startGame();
+                    e.preventDefault();
+                    return;
+                }
+
+                if (gameRunning) {
+                    try { player.jump(); } catch (err) {}
+                    if (!touchHolding) {
+                        touchHolding = true;
+                        clearTouchJump();
+                        touchJumpIntervalId = setInterval(() => {
+                            if (gameRunning) {
+                                try { player.jump(); } catch (err) {}
+                            } else {
+                                clearTouchJump();
+                            }
+                        }, TOUCH_REPEAT_MS);
+                    }
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            touchArea.addEventListener("touchend", (e) => {
+                clearTouchJump();
+                e.preventDefault();
+            }, { passive: false });
+
+            touchArea.addEventListener("touchcancel", (e) => {
+                clearTouchJump();
+                e.preventDefault();
+            }, { passive: false });
+
+            touchArea.addEventListener("touchmove", (e) => {
+            }, { passive: false });
+
+            document.addEventListener("touchend", clearTouchJump);
+            document.addEventListener("touchcancel", clearTouchJump);
+            window.addEventListener("blur", clearTouchJump);
         }
 
         updateHighScoreUI();
