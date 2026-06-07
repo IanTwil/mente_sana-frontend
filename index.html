@@ -290,10 +290,9 @@
             }
         }
 
-        async function startExperience() {
+        function startExperience() {
             const nameInput = document.getElementById('userName').value.trim();
             const pin = document.getElementById('userPin').value;
-            const API_URL = "https://mente-sana-frontend.onrender.com"; 
 
             if (currentRole === 'Estudiante' && (nameInput === "" || pin.length < 4)) {
                 alert("Por favor, ingresa tu nombre y un PIN de 4 dígitos.");
@@ -302,44 +301,26 @@
 
             const finalName = (nameInput === "" && currentRole === "Invitado") ? "Invitado" : nameInput;
 
-            try {
-                
-                const response = await fetch(`${API_URL}/obtener-identidad`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        nombre: finalName,
-                        rol: currentRole
-                    })
-                });
+            const mockId = Math.floor(1000 + Math.random() * 9000).toString();
 
-                if (!response.ok) throw new Error("Error al obtener identidad");
+            localStorage.setItem('usuarioMenteSana', finalName);
+            localStorage.setItem('rolMenteSana', currentRole);
+            localStorage.setItem('idMenteSana', mockId);
 
-                const data = await response.json();
+            const inputSection = document.getElementById('input-section');
+            inputSection.style.transition = "opacity 0.5s ease";
+            inputSection.style.opacity = "0";
 
-                localStorage.setItem('usuarioMenteSana', finalName);
-                localStorage.setItem('rolMenteSana', currentRole);
-                localStorage.setItem('idMenteSana', data.digitos_id);
-
-                const inputSection = document.getElementById('input-section');
-                inputSection.style.transition = "opacity 0.5s ease";
-                inputSection.style.opacity = "0";
+            setTimeout(() => {
+                inputSection.style.display = 'none';
+                document.getElementById('sub-tag').style.display = 'none';
+                document.getElementById('greeting-message').style.display = 'block';
+                document.getElementById('personal-hello').innerText = `¡Hola, ${finalName}!`;
 
                 setTimeout(() => {
-                    inputSection.style.display = 'none';
-                    document.getElementById('sub-tag').style.display = 'none';
-                    document.getElementById('greeting-message').style.display = 'block';
-                    document.getElementById('personal-hello').innerText = `¡Hola, ${finalName}!`;
-
-                    setTimeout(() => {
-                        window.location.href = 'inicio.html';
-                    }, 2000);
-                }, 500);
-
-            } catch (error) {
-                console.error("Error:", error);
-                alert("Hubo un problema al conectar con el servidor. Inténtalo de nuevo.");
-            }
+                    window.location.href = 'inicio.html';
+                }, 2000);
+            }, 500);
         }
     </script>
 </body>
